@@ -1,118 +1,61 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>線上報名預約</title>
-  <!-- 引入 LINE LIFF SDK -->
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select, button { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
-    button { background-color: #06C755; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    button:disabled { background-color: #ccc; }
-    .user-info { background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
-  </style>
-</head>
-<body>
+<!-- 下拉選單預設顯示載入中 -->
+<div class="form-group">
+  <label for="item">報名項目／時段</label>
+  <select id="item" required>
+    <option value="">載入最新課程中...</option>
+  </select>
+</div>
 
-  <h2>線上報名</h2>
-  
-  <!-- 身分顯示區 -->
-  <div class="user-info">
-    預約帳號：<span id="lineName">載入中...</span>
-  </div>
+<script>
+  const LIFF_ID = "2010788391-bIBpQ7sB";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxv8L1z4cr1Bg7VlqTpjBwR6qy6oaGTjB9N_RaV0LgsRflO1V5G91l3K36T3OxQQC_G/exec";
+  let profileData = {};
 
-  <form id="bookingForm">
-    <div class="form-group">
-      <label for="name">真實姓名</label>
-      <input type="text" id="name" required placeholder="請輸入姓名">
-    </div>
-    
-    <div class="form-group">
-      <label for="phone">聯絡電話</label>
-      <input type="tel" id="phone" required placeholder="0912345678">
-    </div>
-
-    <div class="form-group">
-      <label for="item">報名項目／時段</label>
-      <select id="item" required>
-        <option value="">請選擇項目</option>
-        <option value="1.熱門流行舞班">1.熱門流行舞班</option>
-        <option value="2.MV舞蹈體驗課">2.MV舞蹈體驗課</option>
-        <option value="3.熱門流行舞班">3.熱門流行舞班</option>
-        <option value="4.MV舞蹈體驗課">4.MV舞蹈體驗課</option>
-        <option value="5.熱門流行舞班">5.熱門流行舞班</option>
-        <option value="6.MV舞蹈體驗課">6.MV舞蹈體驗課</option>
-        <option value="7.熱門流行舞班">7.熱門流行舞班</option>
-        <option value="8.MV舞蹈體驗課">8.MV舞蹈體驗課</option>
-      </select>
-    </div>
-
-    <button type="submit" id="submitBtn" disabled>確認送出</button>
-  </form>
-
-  <script>
-    // 1. 填入你的 LIFF ID 與 GAS API 網址
-    const LIFF_ID = "2010788391-bIBpQ7sB";
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCMkauDgUXIiZ37x2qNPoav4G59Qi6Khmqc7gSJtp2jITouVX2a347XCMWF8UhVkQKlw/exec";
-
-    let profileData = {};
-
-    // 2. 初始化 LIFF
-    async function main() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        } else {
-          const profile = await liff.getProfile();
-          profileData = {
-            userId: profile.userId,
-            displayName: profile.displayName
-          };
-          document.getElementById('lineName').innerText = profile.displayName;
-          document.getElementById('submitBtn').disabled = false;
-        }
-      } catch (err) {
-        alert("LIFF 初始化失敗：" + err.message);
+  async function main() {
+    try {
+      // 1. 初始化 LIFF 取得使用者身分
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        profileData = { userId: profile.userId, displayName: profile.displayName };
+        document.getElementById('lineName').innerText = profile.displayName;
+        document.getElementById('submitBtn').disabled = false;
       }
+
+      // 2. 向 GAS 讀取最新的課程選單
+      loadCourses();
+
+    } catch (err) {
+      alert("LIFF 初始化失敗：" + err.message);
     }
-    main();
+  }
 
-    // 3. 表單送出處理
-    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.innerText = "資料傳送中...";
+  // 自動載入試算表課程函式
+  async function loadCourses() {
+    try {
+      const response = await fetch(GAS_URL);
+      const result = await response.json();
+      
+      const selectEl = document.getElementById('item');
+      selectEl.innerHTML = '<option value="">請選擇項目</option>'; // 清空選單
 
-      const payload = {
-        userId: profileData.userId,
-        displayName: profileData.displayName,
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        item: document.getElementById('item').value
-      };
-
-      try {
-        await fetch(GAS_URL, {
-          method: 'POST',
-          mode: 'no-cors', // 避開跨網域 CORS 問題
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+      if (result.status === "success" && result.courses.length > 0) {
+        result.courses.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course;
+          option.innerText = course;
+          selectEl.appendChild(option);
         });
-
-        alert("報名成功！");
-        liff.closeWindow(); // 關閉 LIFF 視窗回到 LINE
-      } catch (err) {
-        alert("送出失敗，請重試：" + err.message);
-        btn.disabled = false;
-        btn.innerText = "確認送出";
+      } else {
+        selectEl.innerHTML = '<option value="">目前暫無開放預約的課程</option>';
       }
-    });
-  </script>
-</body>
-</html>
+    } catch (err) {
+      console.error("載入課程失敗：", err);
+      document.getElementById('item').innerHTML = '<option value="">課程載入失敗，請重新整理</option>';
+    }
+  }
+
+  main();
+</script>
