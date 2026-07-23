@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>線上課程預約報名</title>
   
-  <!-- 1. 必備：先載入 LINE LIFF SDK (必須放在最上方) -->
+  <!-- 1. 必備：LINE LIFF SDK (置頂) -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       padding: 20px;
       max-width: 420px;
       margin: 0 auto;
@@ -20,8 +20,8 @@
     .card {
       background: #ffffff;
       padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
     h2 {
       margin-top: 0;
@@ -32,50 +32,110 @@
     .user-info {
       background: #e8f5e9;
       color: #2e7d32;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-radius: 8px;
       margin-bottom: 20px;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: bold;
     }
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 15px;
     }
     input, select {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       box-sizing: border-box;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
       outline: none;
-      transition: border-color 0.2s;
     }
     input:focus, select:focus {
       border-color: #06C755;
     }
-    button {
+    button.submit-btn {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       background-color: #06C755;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 10px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
       margin-top: 10px;
-      transition: background-color 0.2s;
     }
-    button:disabled {
+    button.submit-btn:disabled {
       background-color: #cccccc;
       cursor: not-allowed;
+    }
+
+    /* ---------------- 超大顯眼通知彈窗 (Modal) 樣式 ---------------- */
+    .modal-overlay {
+      display: none; /* 預設隱藏 */
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-box {
+      background: white;
+      width: 85%;
+      max-width: 340px;
+      padding: 30px 20px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-icon {
+      font-size: 54px;
+      margin-bottom: 10px;
+    }
+    .modal-title {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .modal-title.success { color: #06C755; }
+    .modal-title.waitlist { color: #f57c00; }
+    
+    .modal-desc {
+      font-size: 18px;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+    .highlight-text {
+      font-size: 22px;
+      font-weight: 800;
+      color: #d32f2f;
+      display: block;
+      margin-top: 8px;
+    }
+    .modal-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      background-color: #333;
     }
   </style>
 </head>
@@ -84,7 +144,6 @@
   <div class="card">
     <h2>線上預約報名</h2>
     
-    <!-- 顯示使用者身分資訊 -->
     <div class="user-info">
       LINE 帳號：<span id="lineName">身分驗證中...</span>
     </div>
@@ -107,34 +166,41 @@
         </select>
       </div>
 
-      <button type="submit" id="submitBtn" disabled>請稍候...</button>
+      <button type="submit" id="submitBtn" class="submit-btn" disabled>請稍候...</button>
     </form>
   </div>
 
-  <!-- 2. 初始化與邏輯程式碼 -->
+  <!-- 超大顯眼結果通知彈窗 -->
+  <div id="resultModal" class="modal-overlay">
+    <div class="modal-box">
+      <div id="modalIcon" class="modal-icon">🎉</div>
+      <div id="modalTitle" class="modal-title success">預約成功</div>
+      <div id="modalDesc" class="modal-desc">
+        您已成功取得正取名額！
+      </div>
+      <button class="modal-btn" onclick="closeAndExit()">確認並關閉</button>
+    </div>
+  </div>
+
   <script>
-    // ⚠️ 請修改成您自己的設定值
+    // ⚠️ 請修改成您的專屬設定值
     const LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxv8L1z4cr1Bg7VlqTpjBwR6qy6oaGTjB9N_RaV0LgsRflO1V5G91l3K36T3OxQQC_G/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx4UiOb6YVZG7dfmCJbEjVTyQpAUPRK70Zg4WljS_fJnnWLDDIdW0eAwZ2LjKL7vauTYw/exec";
 
     let profileData = {};
 
-    // 確保網頁元件與外部 SDK 載入完成後才執行
     window.onload = async function() {
-      // 1. 檢查 SDK 是否成功讀取，防範 liff is not defined 錯誤
       if (typeof liff === 'undefined') {
         alert("LINE SDK 載入失敗，請檢查網路連線或重新整理頁面！");
         return;
       }
 
-      // 2. 執行 LIFF 初始化
       try {
         await liff.init({ liffId: LIFF_ID });
 
         if (!liff.isLoggedIn()) {
-          liff.login(); // 若未登入自動引導登入
+          liff.login();
         } else {
-          // 取得 LINE 使用者 Profile
           const profile = await liff.getProfile();
           profileData = {
             userId: profile.userId,
@@ -142,16 +208,14 @@
           };
           
           document.getElementById('lineName').innerText = profile.displayName;
-          
-          // 身分驗證完畢，同步載入試算表課程選單
           await loadCourses();
         }
       } catch (err) {
-        alert("LIFF 初始化失敗，請確認 LIFF ID 是否正確：" + err.message);
+        alert("LIFF 初始化失敗：" + err.message);
       }
     };
 
-    // 3. 從 GAS (Google 試算表) 動態抓取最新上架課程
+    // 載入課程
     async function loadCourses() {
       const selectEl = document.getElementById('item');
       const submitBtn = document.getElementById('submitBtn');
@@ -160,7 +224,7 @@
         const response = await fetch(GAS_URL);
         const result = await response.json();
         
-        selectEl.innerHTML = '<option value="">請選擇課程</option>'; // 清空選單
+        selectEl.innerHTML = '<option value="">請選擇課程</option>';
 
         if (result.status === "success" && result.courses && result.courses.length > 0) {
           result.courses.forEach(course => {
@@ -170,7 +234,6 @@
             selectEl.appendChild(option);
           });
           
-          // 開啟選單與送出按鈕
           selectEl.disabled = false;
           submitBtn.disabled = false;
           submitBtn.innerText = "確認預約送出";
@@ -185,13 +248,13 @@
       }
     }
 
-    // 4. 表單送出處理解析
+    // 表單送出處理
     document.getElementById('bookingForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
-      submitBtn.innerText = "報名傳送中...";
+      submitBtn.innerText = "報名處理中...";
 
       const payload = {
         userId: profileData.userId,
@@ -202,22 +265,55 @@
       };
 
       try {
-        // 傳送報名資料給 GAS 寫入 Google 試算表
-        await fetch(GAS_URL, {
+        const response = await fetch(GAS_URL, {
           method: 'POST',
-          mode: 'no-cors', // 避開 CORS 限制
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
-        alert("🎉 報名成功！資料已送出。");
-        liff.closeWindow(); // 自動關閉 LIFF 視窗返回 LINE 聊天室
+        const resData = await response.json();
+
+        if (resData.status === "success") {
+          // 顯示大字體彈窗
+          showResultModal(resData.bookingStatus, resData.waitlistNo, resData.courseName);
+        } else {
+          alert("預約失敗：" + resData.message);
+          submitBtn.disabled = false;
+          submitBtn.innerText = "確認預約送出";
+        }
+
       } catch (err) {
         alert("送出失敗，請再試一次：" + err.message);
         submitBtn.disabled = false;
         submitBtn.innerText = "確認預約送出";
       }
     });
+
+    // 顯示大字體客製化彈窗
+    function showResultModal(status, waitlistNo, courseName) {
+      const modal = document.getElementById('resultModal');
+      const modalIcon = document.getElementById('modalIcon');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalDesc = document.getElementById('modalDesc');
+
+      if (status === "正取") {
+        modalIcon.innerText = "🎉";
+        modalTitle.innerText = "預約成功！";
+        modalTitle.className = "modal-title success";
+        modalDesc.innerHTML = `您已成功取得【<b>${courseName}</b>】的<br><span class="highlight-text" style="color:#06C755;">正取名額</span>`;
+      } else {
+        modalIcon.innerText = "⏳";
+        modalTitle.innerText = "已加入候補名單";
+        modalTitle.className = "modal-title waitlist";
+        modalDesc.innerHTML = `【<b>${courseName}</b>】目前名額已滿。<br>您當前排在：<span class="highlight-text">候補第 ${waitlistNo} 位</span>`;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    // 關閉彈窗並返回 LINE
+    function closeAndExit() {
+      liff.closeWindow();
+    }
   </script>
 </body>
 </html>
