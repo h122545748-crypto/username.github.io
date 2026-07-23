@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文舞集-線上課程預約報名</title>
+  <title>線上課程預約報名</title>
   
-  <!-- 1. 必備：LINE LIFF SDK (置頂) -->
+  <!-- 置頂引入 LINE LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
@@ -23,130 +23,55 @@
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
-    h2 {
-      margin-top: 0;
-      color: #111;
-      font-size: 22px;
-      text-align: center;
-    }
+    h2 { margin-top: 0; color: #111; font-size: 22px; text-align: center; }
     .user-info {
-      background: #e8f5e9;
-      color: #2e7d32;
-      padding: 12px 14px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 15px;
-      font-weight: bold;
+      background: #e8f5e9; color: #2e7d32;
+      padding: 12px 14px; border-radius: 8px;
+      margin-bottom: 20px; font-size: 15px; font-weight: bold;
     }
-    .form-group {
-      margin-bottom: 18px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 15px;
-    }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 15px; }
     input, select {
-      width: 100%;
-      padding: 14px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 16px;
-      outline: none;
+      width: 100%; padding: 14px; box-sizing: border-box;
+      border: 1px solid #ccc; border-radius: 10px; font-size: 16px; outline: none;
     }
-    input:focus, select:focus {
-      border-color: #06C755;
-    }
+    input:focus, select:focus { border-color: #06C755; }
     button.submit-btn {
-      width: 100%;
-      padding: 16px;
-      background-color: #06C755;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
+      width: 100%; padding: 16px; background-color: #06C755;
+      color: white; border: none; border-radius: 10px;
+      font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px;
     }
-    button.submit-btn:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
+    button.submit-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
 
-    /* ---------------- 超大顯眼通知彈窗 (Modal) 樣式 ---------------- */
+    /* ---------------- 超大顯眼結果通知彈窗 ---------------- */
     .modal-overlay {
-      display: none; /* 預設隱藏 */
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); z-index: 9999;
+      justify-content: center; align-items: center;
     }
     .modal-box {
-      background: white;
-      width: 85%;
-      max-width: 340px;
-      padding: 30px 20px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      background: white; width: 85%; max-width: 340px; padding: 30px 20px;
+      border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    @keyframes popIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .modal-icon {
-      font-size: 54px;
-      margin-bottom: 10px;
-    }
-    .modal-title {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-icon { font-size: 54px; margin-bottom: 10px; }
+    .modal-title { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
     .modal-title.success { color: #06C755; }
     .modal-title.waitlist { color: #f57c00; }
-    
-    .modal-desc {
-      font-size: 18px;
-      color: #444;
-      line-height: 1.5;
-      margin-bottom: 24px;
-      font-weight: 500;
-    }
-    .highlight-text {
-      font-size: 22px;
-      font-weight: 800;
-      color: #d32f2f;
-      display: block;
-      margin-top: 8px;
-    }
+    .modal-desc { font-size: 18px; color: #444; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
+    .highlight-text { font-size: 22px; font-weight: 800; color: #d32f2f; display: block; margin-top: 8px; }
     .modal-btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-      background-color: #333;
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      font-size: 18px; font-weight: bold; color: white; cursor: pointer; background-color: #333;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>文舞集-線上預約報名</h2>
-    
-    <div class="user-info">
-      LINE 帳號：<span id="lineName">身分驗證中...</span>
-    </div>
+    <h2>線上預約報名</h2>
+    <div class="user-info">LINE 帳號：<span id="lineName">身分驗證中...</span></div>
 
     <form id="bookingForm">
       <div class="form-group">
@@ -175,18 +100,15 @@
     <div class="modal-box">
       <div id="modalIcon" class="modal-icon">🎉</div>
       <div id="modalTitle" class="modal-title success">預約成功</div>
-      <div id="modalDesc" class="modal-desc">
-        您已成功取得正取名額！
-      </div>
+      <div id="modalDesc" class="modal-desc">您已成功取得正取名額！</div>
       <button class="modal-btn" onclick="closeAndExit()">確認並關閉</button>
     </div>
   </div>
 
   <script>
-    // ⚠️ 請修改成您的專屬設定值
+    // ⚠️ 請替換為您的實際 LIFF ID 與 GAS URL
     const LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzykgTYTjozUppcg53BvpXL23RFNYbVDDA1Pp41x0E2Ckr2GQ8oSLrPk5Dx_9z0EL273A/exec";
-
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzyfe9KQWtZeM30ITeNgxwMqTzioF7xcX684Krlf_RBtUXLcsEKvjux0PtwNeQi7i4JEg/exec";
     let profileData = {};
 
     window.onload = async function() {
@@ -197,16 +119,11 @@
 
       try {
         await liff.init({ liffId: LIFF_ID });
-
         if (!liff.isLoggedIn()) {
           liff.login();
         } else {
           const profile = await liff.getProfile();
-          profileData = {
-            userId: profile.userId,
-            displayName: profile.displayName
-          };
-          
+          profileData = { userId: profile.userId, displayName: profile.displayName };
           document.getElementById('lineName').innerText = profile.displayName;
           await loadCourses();
         }
@@ -215,7 +132,7 @@
       }
     };
 
-    // 載入課程
+    // 讀取試算表上的上架課程
     async function loadCourses() {
       const selectEl = document.getElementById('item');
       const submitBtn = document.getElementById('submitBtn');
@@ -273,8 +190,13 @@
         const resData = await response.json();
 
         if (resData.status === "success") {
-          // 顯示大字體彈窗
+          // 正取或候補成功彈窗
           showResultModal(resData.bookingStatus, resData.waitlistNo, resData.courseName);
+        } else if (resData.status === "duplicate") {
+          // 重複報名彈窗
+          showResultModal("重複報名", 0, resData.courseName);
+          submitBtn.disabled = false;
+          submitBtn.innerText = "確認預約送出";
         } else {
           alert("預約失敗：" + resData.message);
           submitBtn.disabled = false;
@@ -300,17 +222,22 @@
         modalTitle.innerText = "預約成功！";
         modalTitle.className = "modal-title success";
         modalDesc.innerHTML = `您已成功取得【<b>${courseName}</b>】的<br><span class="highlight-text" style="color:#06C755;">正取名額</span>`;
-      } else {
+      } else if (status === "候補") {
         modalIcon.innerText = "⏳";
         modalTitle.innerText = "已加入候補名單";
         modalTitle.className = "modal-title waitlist";
         modalDesc.innerHTML = `【<b>${courseName}</b>】目前名額已滿。<br>您當前排在：<span class="highlight-text">候補第 ${waitlistNo} 位</span>`;
+      } else if (status === "重複報名") {
+        modalIcon.innerText = "⚠️";
+        modalTitle.innerText = "您已報名過此課程";
+        modalTitle.className = "modal-title waitlist";
+        modalDesc.innerHTML = `您先前已經報名過【<b>${courseName}</b>】囉！<br><span class="highlight-text" style="color:#d32f2f; font-size:18px; margin-top:10px;">無需重複送出資料</span>`;
       }
 
       modal.style.display = 'flex';
     }
 
-    // 關閉彈窗並返回 LINE
+    // 按下確認關閉 LIFF 視窗
     function closeAndExit() {
       liff.closeWindow();
     }
