@@ -59,6 +59,7 @@
     .modal-title { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
     .modal-title.success { color: #06C755; }
     .modal-title.waitlist { color: #f57c00; }
+    .modal-title.error { color: #d32f2f; }
     .modal-desc { font-size: 18px; color: #444; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
     .highlight-text { font-size: 22px; font-weight: 800; color: #d32f2f; display: block; margin-top: 8px; }
     .modal-btn {
@@ -81,7 +82,8 @@
       
       <div class="form-group">
         <label for="phone">聯絡電話</label>
-        <input type="tel" id="phone" required placeholder="例如：0912345678">
+        <!-- restriction: 限定只能輸入數字、格式匹配 09 開頭共 10 碼 -->
+        <input type="tel" id="phone" required placeholder="例如：0912345678" maxlength="10" pattern="^09\d{8}$">
       </div>
 
       <div class="form-group">
@@ -101,14 +103,14 @@
       <div id="modalIcon" class="modal-icon">🎉</div>
       <div id="modalTitle" class="modal-title success">預約成功</div>
       <div id="modalDesc" class="modal-desc">您已成功取得正取名額！</div>
-      <button class="modal-btn" onclick="closeAndExit()">確認並關閉</button>
+      <button id="modalBtn" class="modal-btn" onclick="closeModal()">確認</button>
     </div>
   </div>
 
   <script>
     // ⚠️ 請替換為您的實際 LIFF ID 與 GAS URL
     const LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyZzWDzEbmCxJ3f-AF7kCjZDj9UGLO4S8MbgMIxLmiSEXw55V1q-linf74YUiD8HnNmyw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx_pI1nE5TaK5ac_SfAVhQnNNrVx9HkTjUIXKHuKoO6QIV0RtdgHHQRLhaMWD1G_SUq/exec";
     let profileData = {};
 
     window.onload = async function() {
@@ -132,7 +134,7 @@
       }
     };
 
-    // 讀取試算表上的上架課程
+    // 載入課程
     async function loadCourses() {
       const selectEl = document.getElementById('item');
       const submitBtn = document.getElementById('submitBtn');
@@ -169,6 +171,15 @@
     document.getElementById('bookingForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const phoneInput = document.getElementById('phone').value.trim();
+      
+      // 前端正則表達式防護：檢查是否為 09 開頭且正好 10 碼數字
+      const phoneRegex = /^09\d{8}$/;
+      if (!phoneRegex.test(phoneInput)) {
+        showResultModal("電話錯誤", 0, "");
+        return;
+      }
+
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.innerText = "報名處理中...";
@@ -177,7 +188,7 @@
         userId: profileData.userId,
         displayName: profileData.displayName,
         name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
+        phone: phoneInput,
         item: document.getElementById('item').value
       };
 
@@ -190,11 +201,13 @@
         const resData = await response.json();
 
         if (resData.status === "success") {
-          // 正取或候補成功彈窗
           showResultModal(resData.bookingStatus, resData.waitlistNo, resData.courseName);
         } else if (resData.status === "duplicate") {
-          // 重複報名彈窗
           showResultModal("重複報名", 0, resData.courseName);
+          submitBtn.disabled = false;
+          submitBtn.innerText = "確認預約送出";
+        } else if (resData.status === "invalid_phone") {
+          showResultModal("電話錯誤", 0, "");
           submitBtn.disabled = false;
           submitBtn.innerText = "確認預約送出";
         } else {
@@ -216,28 +229,43 @@
       const modalIcon = document.getElementById('modalIcon');
       const modalTitle = document.getElementById('modalTitle');
       const modalDesc = document.getElementById('modalDesc');
+      const modalBtn = document.getElementById('modalBtn');
 
       if (status === "正取") {
         modalIcon.innerText = "🎉";
         modalTitle.innerText = "預約成功！";
         modalTitle.className = "modal-title success";
         modalDesc.innerHTML = `您已成功取得【<b>${courseName}</b>】的<br><span class="highlight-text" style="color:#06C755;">正取名額</span>`;
+        modalBtn.setAttribute("onclick", "closeAndExit()");
       } else if (status === "候補") {
         modalIcon.innerText = "⏳";
         modalTitle.innerText = "已加入候補名單";
         modalTitle.className = "modal-title waitlist";
         modalDesc.innerHTML = `【<b>${courseName}</b>】目前名額已滿。<br>您當前排在：<span class="highlight-text">候補第 ${waitlistNo} 位</span>`;
+        modalBtn.setAttribute("onclick", "closeAndExit()");
       } else if (status === "重複報名") {
         modalIcon.innerText = "⚠️";
         modalTitle.innerText = "您已報名過此課程";
         modalTitle.className = "modal-title waitlist";
         modalDesc.innerHTML = `您先前已經報名過【<b>${courseName}</b>】囉！<br><span class="highlight-text" style="color:#d32f2f; font-size:18px; margin-top:10px;">無需重複送出資料</span>`;
+        modalBtn.setAttribute("onclick", "closeModal()");
+      } else if (status === "電話錯誤") {
+        modalIcon.innerText = "❌";
+        modalTitle.innerText = "電話號碼格式錯誤";
+        modalTitle.className = "modal-title error";
+        modalDesc.innerHTML = `請輸入正確的台灣手機號碼！<br><span class="highlight-text" style="color:#d32f2f; font-size:18px; margin-top:10px;">需為 09 開頭且共 10 位數字</span>`;
+        modalBtn.setAttribute("onclick", "closeModal()");
       }
 
       modal.style.display = 'flex';
     }
 
-    // 按下確認關閉 LIFF 視窗
+    // 僅關閉彈窗（留在頁面修改資料）
+    function closeModal() {
+      document.getElementById('resultModal').style.display = 'none';
+    }
+
+    // 關閉彈窗並離開 LIFF
     function closeAndExit() {
       liff.closeWindow();
     }
