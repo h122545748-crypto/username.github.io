@@ -3,58 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>舞蹈課程報名</title>
+  <title>Pop & Jazz 舞蹈課程報名</title>
   
   <!-- 引入 LINE LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     :root {
-      --primary-color: #e91e63; /* 品牌亮粉色 */
-      --primary-light: #fce4ec;
-      --border-color: #e0e0e0;
-      --text-main: #333333;
+      /* 時尚霓虹漸層主色調 */
+      --primary-gradient: linear-gradient(135deg, #ff2a75 0%, #902bf5 100%);
+      --primary-pink: #ff2a75;
+      --primary-purple: #902bf5;
+      --card-bg-selected: rgba(255, 42, 117, 0.03);
+      --border-color: #eaeaea;
+      --text-main: #222222;
       --text-sub: #666666;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f8f9fa;
+      background-color: #f6f7fb;
       margin: 0;
-      padding: 20px 15px;
+      padding: 24px 16px;
       color: var(--text-main);
+      -webkit-tap-highlight-color: transparent; /* 移除手機點擊藍色陰影 */
     }
 
     .form-container {
-      max-width: 500px;
+      max-width: 480px;
       margin: 0 auto;
       background: #ffffff;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 28px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(144, 43, 245, 0.08);
     }
 
+    /* 標題霓虹漸層 */
     h2 {
       text-align: center;
-      margin-bottom: 20px;
-      color: var(--primary-color);
-      font-size: 1.4rem;
+      margin: 0 0 8px 0;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
     }
 
     .user-welcome {
       text-align: center;
       color: var(--text-sub);
       font-size: 0.9rem;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
       border-bottom: 1px dashed var(--border-color);
     }
 
     .section-title {
-      font-weight: bold;
-      margin-bottom: 12px;
-      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
       display: block;
+      color: var(--text-main);
     }
 
     /* 隱藏原生 Radio 按鈕 */
@@ -69,75 +79,141 @@
     .course-card-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 24px;
+      gap: 14px;
+      margin-bottom: 28px;
     }
 
-    /* 卡片樣式 */
+    /* --- 1. 卡片登場階梯動畫 --- */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-item-wrapper {
+      opacity: 0; /* 預設隱藏，動畫發動後顯示 */
+      animation: fadeUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    /* --- 2. 時尚卡片基底 --- */
     .course-card {
       position: relative;
       background-color: #ffffff;
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 18px;
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      box-sizing: border-box;
+      /* 多層邊框與陰影過渡 */
+      border: 2px solid transparent;
+      background-image: linear-gradient(#fff, #fff), var(--border-color);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
       display: block;
     }
 
+    /* --- 3. 點擊 Q 彈感 (Press Micro-interaction) --- */
     .course-card:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
     }
 
-    /* 選中狀態卡片風格 */
+    /* --- 4. 選中狀態（霓虹漸層邊框 + 微微浮起 + 輕盈光暈） --- */
     .course-radio-input:checked + .course-card {
-      border-color: var(--primary-color);
-      background-color: var(--primary-light);
-      box-shadow: 0 4px 12px rgba(233, 30, 99, 0.15);
+      background-image: linear-gradient(#ffffff, #ffffff), var(--primary-gradient);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 42, 117, 0.18);
     }
 
-    /* 選中時的勾勾圖示 */
+    /* 右上角勾勾外圈 */
     .card-check-icon {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 20px;
-      height: 20px;
+      top: 18px;
+      right: 18px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      border: 2px solid var(--border-color);
+      border: 2px solid #ddd;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 12px;
       color: #fff;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
+    }
+
+    /* --- 5. 勾勾彈跳顯現動畫 --- */
+    @keyframes popIn {
+      0% { transform: scale(0.6); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); }
     }
 
     .course-radio-input:checked + .course-card .card-check-icon {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
+      background: var(--primary-gradient);
+      border-color: transparent;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .course-radio-input:checked + .course-card .card-check-icon::after {
       content: "✓";
-      font-weight: bold;
+      font-weight: 800;
     }
 
-    /* 課程卡片內文排版 */
+    /* 卡片內文字視覺排版 */
+    .course-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
     .course-name {
       font-size: 1.1rem;
-      font-weight: bold;
+      font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 8px;
-      padding-right: 28px; /* 避開右上角勾勾 */
-      line-height: 1.4;
+      padding-right: 28px;
+      line-height: 1.35;
+    }
+
+    /* 呼吸燈小熱門標籤 */
+    .hot-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 42, 117, 0.1);
+      color: var(--primary-pink);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-pink);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite ease-in-out;
     }
 
     .course-info-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
       font-size: 0.88rem;
       color: var(--text-sub);
     }
@@ -148,80 +224,94 @@
       gap: 6px;
     }
 
-    /* 表單輸入框樣式 */
+    /* 輸入框樣式 */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     .form-group label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-size: 0.9rem;
       font-weight: 600;
     }
 
     .form-control {
       width: 100%;
-      padding: 12px;
+      padding: 14px 16px;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 12px;
       box-sizing: border-box;
       font-size: 1rem;
+      background-color: #fafafa;
+      transition: all 0.2s ease;
     }
 
     .form-control:focus {
       outline: none;
-      border-color: var(--primary-color);
+      background-color: #fff;
+      border-color: var(--primary-purple);
+      box-shadow: 0 0 0 3px rgba(144, 43, 245, 0.12);
     }
 
+    /* 按鈕漸層 + 微光澤動畫 */
     .submit-btn {
       width: 100%;
-      background-color: var(--primary-color);
+      background: var(--primary-gradient);
       color: white;
       border: none;
-      padding: 14px;
-      border-radius: 8px;
+      padding: 16px;
+      border-radius: 12px;
       font-size: 1.05rem;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 6px 18px rgba(255, 42, 117, 0.28);
+      transition: all 0.25s ease;
+      margin-top: 10px;
+    }
+
+    .submit-btn:active:not(:disabled) {
+      transform: scale(0.98);
+      box-shadow: 0 3px 10px rgba(255, 42, 117, 0.2);
     }
 
     .submit-btn:disabled {
-      background-color: #ccc;
+      background: #e0e0e0;
+      box-shadow: none;
       cursor: not-allowed;
+      color: #a0a0a0;
     }
 
     .loading-text {
       text-align: center;
       color: var(--text-sub);
-      padding: 20px 0;
+      padding: 30px 0;
+      font-size: 0.95rem;
     }
   </style>
 </head>
 <body>
 
   <div class="form-container">
-    <h2>💃 課程線上預約</h2>
+    <h2>💃 POP & JAZZ 課程預約</h2>
 
-    <!-- 顯示使用者 LINE 暱稱 -->
-    <div id="userWelcome" class="user-welcome">正在登入 LINE 帳號...</div>
+    <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
 
     <form id="bookingForm">
-      <span class="section-title">請選擇預約課程：</span>
+      <span class="section-title">選擇欲預約的舞蹈課程：</span>
       
-      <!-- 動態載入卡片的容器 -->
+      <!-- 卡片渲染區 -->
       <div id="courseCardList" class="course-card-list">
-        <div class="loading-text">課程載入中，請稍候...</div>
+        <div class="loading-text">✨ 課程載入中，請稍候...</div>
       </div>
 
       <div class="form-group">
-        <label for="name">您的真實姓名：</label>
+        <label for="name">學員真實姓名</label>
         <input type="text" id="name" class="form-control" placeholder="請輸入姓名" required>
       </div>
 
       <div class="form-group">
-        <label for="phone">聯絡電話 (09開頭)：</label>
+        <label for="phone">聯絡電話</label>
         <input type="tel" id="phone" class="form-control" placeholder="0912345678" maxlength="10" required>
       </div>
 
@@ -234,18 +324,14 @@
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxELTol0jvto-n2sBb7-e9QvGKMrLTW8gUC-CLB5Emb4nhq1NvqWk2fGIVQlAzQZDUdXw/exec";
 
-    let lineProfile = {
-      userId: "",
-      displayName: ""
-    };
+    let lineProfile = { userId: "", displayName: "" };
 
-    // 頁面初始化
     document.addEventListener("DOMContentLoaded", async () => {
       await initLIFF();
       await fetchCourses();
     });
 
-    // 1. LIFF 初始化與取得 User Profile
+    // 1. LIFF 初始化
     async function initLIFF() {
       const welcomeEl = document.getElementById("userWelcome");
       const submitBtn = document.getElementById("submitBtn");
@@ -254,19 +340,17 @@
         await liff.init({ liffId: MY_LIFF_ID });
 
         if (!liff.isLoggedIn()) {
-          // 若未登入 LINE，引導登入
           liff.login();
           return;
         }
 
-        // 取得使用者 LINE Profile
         const profile = await liff.getProfile();
         lineProfile.userId = profile.userId;
         lineProfile.displayName = profile.displayName;
 
         welcomeEl.innerText = `👋 你好，${lineProfile.displayName}`;
         submitBtn.disabled = false;
-        submitBtn.innerText = "確認送出報名";
+        submitBtn.innerText = "確認送出預約";
 
       } catch (err) {
         console.error("LIFF 初始化失敗:", err);
@@ -274,7 +358,7 @@
       }
     }
 
-    // 2. 從 GAS 取得課程清單並渲染卡片
+    // 2. 從 GAS 取得課程並動態渲染（帶有延遲動畫效果）
     async function fetchCourses() {
       const container = document.getElementById("courseCardList");
       try {
@@ -282,12 +366,22 @@
         const data = await response.json();
 
         if (data.status === "success" && data.courses.length > 0) {
-          container.innerHTML = ""; // 清空載入中
+          container.innerHTML = ""; 
 
           data.courses.forEach((course, index) => {
-            const isChecked = index === 0 ? "checked" : ""; // 預設選第一個
+            const isChecked = index === 0 ? "checked" : ""; 
+            // 讓每張卡片延遲 0.08s 依序登場
+            const delay = (index * 0.08).toFixed(2);
+            
+            // 第一張卡片給予 HOT 標籤
+            const hotTagHtml = index === 0 ? `
+              <span class="hot-tag">
+                <span class="pulse-dot"></span>HOT 熱門
+              </span>
+            ` : '';
+
             const cardHtml = `
-              <div>
+              <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
                 <input 
                   type="radio" 
                   name="courseSelection" 
@@ -298,7 +392,12 @@
                 >
                 <label for="course_${index}" class="course-card">
                   <div class="card-check-icon"></div>
-                  <div class="course-name">${course.courseName}</div>
+                  
+                  <div class="course-header">
+                    <span class="course-name">${course.courseName}</span>
+                    ${hotTagHtml}
+                  </div>
+
                   <div class="course-info-group">
                     <div class="course-info-item">
                       <span>👤 授課老師：${course.teacher}</span>
@@ -307,7 +406,7 @@
                       <span>⏰ 上課時間：${course.timeInfo}</span>
                     </div>
                     <div class="course-info-item">
-                      <span>👥 人數上限：${course.maxCapacity} 人</span>
+                      <span>👥 報名上限：${course.maxCapacity} 人</span>
                     </div>
                   </div>
                 </label>
@@ -324,7 +423,7 @@
       }
     }
 
-    // 3. 送出表單資料到 GAS
+    // 3. 送出表單到 GAS
     document.getElementById("bookingForm").addEventListener("submit", async function(e) {
       e.preventDefault();
 
@@ -344,14 +443,14 @@
       const submitBtn = document.getElementById("submitBtn");
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "資料送出中...";
+      submitBtn.innerText = "正在為您預約中...";
 
       const payload = {
-        userId: lineProfile.userId,          // 自動帶入真實 LINE User ID
-        displayName: lineProfile.displayName, // 自動帶入 LINE 暱稱
-        name: name,                          // 使用者填寫的真實姓名
-        phone: phone,                        // 使用者填寫的電話
-        item: selectedCourse.value          // 選中的課程名稱
+        userId: lineProfile.userId,
+        displayName: lineProfile.displayName,
+        name: name,
+        phone: phone,
+        item: selectedCourse.value
       };
 
       try {
@@ -364,7 +463,7 @@
         const result = await res.json();
         if (result.status === "success") {
           alert(`🎉 報名成功！\n課程：${result.courseName}\n狀態：${result.bookingStatus}`);
-          liff.closeWindow(); // 報名成功後自動關閉 LIFF 視窗
+          liff.closeWindow();
         } else if (result.status === "duplicate") {
           alert(`⚠️ ${result.message}`);
         } else {
@@ -374,7 +473,7 @@
         alert("系統連線錯誤，請稍後再試！");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "確認送出報名";
+        submitBtn.innerText = "確認送出預約";
       }
     });
   </script>
