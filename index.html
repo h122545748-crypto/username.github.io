@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文舞集 課程預約</title>
+  <title>文舞集 目前課程</title>
   
   <!-- 引入 LINE LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -226,7 +226,7 @@
       font-weight: 900;
       color: var(--text-main);
       padding-right: 32px;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     .course-info-group {
@@ -315,7 +315,7 @@
 <body>
 
   <div class="form-container">
-    <h2>💃 文舞集 課程預約</h2>
+    <h2>文舞集 目前課程</h2>
 
     <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
 
@@ -394,6 +394,10 @@
             const isChecked = index === 0 ? "checked" : ""; 
             const delay = (index * 0.1).toFixed(2);
 
+            // 💡 遇到括號 ( 或 （ 自動替換成 <br> 換行
+            const formattedCourseName = course.courseName
+              .replace(/[\(（]/g, '<br>(');
+
             const cardHtml = `
               <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
                 <input 
@@ -408,7 +412,7 @@
                   <div class="card-check-icon"></div>
                   
                   <div class="course-header">
-                    <span class="course-name">${course.courseName}</span>
+                    <span class="course-name">${formattedCourseName}</span>
                   </div>
 
                   <div class="course-info-group">
