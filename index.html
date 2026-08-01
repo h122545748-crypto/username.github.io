@@ -10,19 +10,17 @@
 
   <style>
     :root {
-      /* 超絢麗霓虹漸層 */
-      --primary-gradient: linear-gradient(135deg, #ff007f, #7928ca, #00dfd8);
-      --animated-gradient: linear-gradient(90deg, #ff007f, #7928ca, #00dfd8, #ff007f);
+      /* 超高飽和度誇張漸層 */
+      --animated-gradient: linear-gradient(90deg, #ff007f, #7928ca, #00d2ff, #ff007f);
       --primary-pink: #ff007f;
-      --primary-purple: #7928ca;
-      --border-color: #f0f0f0;
+      --border-color: #e2e2e8;
       --text-main: #1d1d1f;
       --text-sub: #6e6e73;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #f4f5f9;
+      background: #f2f3f8;
       margin: 0;
       padding: 24px 16px;
       color: var(--text-main);
@@ -35,13 +33,13 @@
       background: #ffffff;
       padding: 30px 22px;
       border-radius: 24px;
-      box-shadow: 0 16px 40px rgba(121, 40, 202, 0.12);
+      box-shadow: 0 16px 40px rgba(121, 40, 202, 0.15);
       position: relative;
       overflow: hidden;
     }
 
-    /* --- 1. 標題動態流光效果 --- */
-    @keyframes gradientFlow {
+    /* --- 1. 標題流光動畫 --- */
+    @keyframes titleGradientFlow {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
@@ -50,13 +48,13 @@
     h2 {
       text-align: center;
       margin: 0 0 8px 0;
-      font-size: 1.7rem;
+      font-size: 1.8rem;
       font-weight: 900;
       background: var(--animated-gradient);
       background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: gradientFlow 4s ease infinite;
+      animation: titleGradientFlow 3s ease infinite;
       letter-spacing: 1px;
     }
 
@@ -88,19 +86,19 @@
     .course-card-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 28px;
     }
 
-    /* --- 2. 華麗彈跳登場動畫 (Spring Bounce Entry) --- */
+    /* --- 2. 誇張彈跳登場動畫 (Spring Bounce) --- */
     @keyframes springSlideUp {
       0% {
         opacity: 0;
-        transform: translateY(35px) scale(0.92);
+        transform: translateY(40px) scale(0.88);
       }
       60% {
         opacity: 1;
-        transform: translateY(-6px) scale(1.02);
+        transform: translateY(-8px) scale(1.03);
       }
       100% {
         opacity: 1;
@@ -110,39 +108,73 @@
 
     .card-item-wrapper {
       opacity: 0;
-      animation: springSlideUp 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: springSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
-    /* --- 3. 卡片基底與動態流光的容器 --- */
+    /* --- 3. 手機高相容 4px 誇張雙層卡片與流光 --- */
     .course-card {
       position: relative;
       background-color: #ffffff;
-      border-radius: 18px;
-      padding: 20px;
+      border-radius: 20px;
+      padding: 22px;
       cursor: pointer;
       box-sizing: border-box;
-      border: 2px solid #eaeaea;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+      /* 未選中時：4px 粗度的灰框 */
+      border: 4px solid var(--border-color);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
       transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
       display: block;
       overflow: hidden;
+      z-index: 1;
     }
 
-    /* 按壓 Q 彈微互動 */
+    /* 按壓 Q 彈效果 */
     .course-card:active {
-      transform: scale(0.95) !important;
+      transform: scale(0.94) !important;
     }
 
-    /* --- 4. 選中卡片：絢麗動態邊框 + 懸浮 + 光暈 --- */
+    /* --- 4. 手機絕對支援的動態滿版漸層背景（選中時） --- */
+    @keyframes rotateNeon {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* 選中時的誇張 4px 動態邊框包覆層 */
+    .course-card::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 250%;
+      height: 500%;
+      background: conic-gradient(#ff007f, #7928ca, #00d2ff, #ff007f);
+      transform: translate(-50%, -50%) rotate(0deg);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -2;
+    }
+
+    /* 白色內襯（創造出 4px 邊框效果） */
+    .course-card::after {
+      content: "";
+      position: absolute;
+      inset: 4px; /* 留出 4px 當作超粗邊框 */
+      background: #ffffff;
+      border-radius: 14px;
+      z-index: -1;
+    }
+
+    /* 選中狀態（Radio Checked） */
     .course-radio-input:checked + .course-card {
       border-color: transparent;
-      background-image: linear-gradient(#ffffff, #ffffff), var(--animated-gradient);
-      background-size: 100% 100%, 200% 200%;
-      background-origin: border-box;
-      background-clip: padding-box, border-box;
-      animation: gradientFlow 3s ease infinite;
-      transform: translateY(-6px);
-      box-shadow: 0 12px 28px rgba(255, 0, 127, 0.22);
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 14px 32px rgba(255, 0, 127, 0.35);
+    }
+
+    /* 觸發手機順暢旋轉動畫 */
+    .course-radio-input:checked + .course-card::before {
+      opacity: 1;
+      animation: rotateNeon 3s linear infinite;
     }
 
     /* 右上角勾勾圖示外圈 */
@@ -150,28 +182,29 @@
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      border: 2px solid #ddd;
+      border: 3px solid #ccc;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 15px;
       color: #fff;
       transition: all 0.3s ease;
+      z-index: 2;
     }
 
     /* --- 5. 勾勾 180度旋轉彈跳動畫 (Pop-Spin) --- */
     @keyframes popSpin {
-      0% { transform: scale(0.3) rotate(-180deg); }
-      70% { transform: scale(1.25) rotate(10deg); }
+      0% { transform: scale(0.2) rotate(-180deg); }
+      70% { transform: scale(1.3) rotate(15deg); }
       100% { transform: scale(1) rotate(0deg); }
     }
 
     .course-radio-input:checked + .course-card .card-check-icon {
-      background: var(--primary-gradient);
+      background: linear-gradient(135deg, #ff007f, #7928ca);
       border-color: transparent;
       animation: popSpin 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
@@ -185,60 +218,22 @@
     .course-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .course-name {
-      font-size: 1.15rem;
-      font-weight: 800;
+      font-size: 1.2rem;
+      font-weight: 900;
       color: var(--text-main);
-      padding-right: 30px;
+      padding-right: 32px;
       line-height: 1.35;
-    }
-
-    /* 華麗脈衝呼吸燈 HOT 標籤 */
-    .hot-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255, 0, 127, 0.12);
-      color: var(--primary-pink);
-      font-size: 0.75rem;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 20px;
-      white-space: nowrap;
-    }
-
-    @keyframes pulseGlow {
-      0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(255, 0, 127, 0.7);
-      }
-      70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 6px rgba(255, 0, 127, 0);
-      }
-      100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(255, 0, 127, 0);
-      }
-    }
-
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      background-color: var(--primary-pink);
-      border-radius: 50%;
-      animation: pulseGlow 1.8s infinite ease-in-out;
     }
 
     .course-info-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      font-size: 0.9rem;
+      gap: 7px;
+      font-size: 0.92rem;
       color: var(--text-sub);
     }
 
@@ -250,20 +245,20 @@
 
     /* 表單輸入框 */
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .form-group label {
       display: block;
       margin-bottom: 8px;
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       font-weight: 700;
     }
 
     .form-control {
       width: 100%;
-      padding: 15px 16px;
-      border: 1px solid var(--border-color);
+      padding: 16px;
+      border: 2px solid var(--border-color);
       border-radius: 14px;
       box-sizing: border-box;
       font-size: 1rem;
@@ -274,8 +269,8 @@
     .form-control:focus {
       outline: none;
       background-color: #fff;
-      border-color: var(--primary-purple);
-      box-shadow: 0 0 0 4px rgba(121, 40, 202, 0.15);
+      border-color: var(--primary-pink);
+      box-shadow: 0 0 0 4px rgba(255, 0, 127, 0.15);
     }
 
     /* 送出按鈕：流光的華麗按鈕 */
@@ -283,21 +278,21 @@
       width: 100%;
       background: var(--animated-gradient);
       background-size: 200% 200%;
-      animation: gradientFlow 4s ease infinite;
+      animation: titleGradientFlow 3s ease infinite;
       color: white;
       border: none;
-      padding: 16px;
-      border-radius: 14px;
-      font-size: 1.1rem;
-      font-weight: 800;
+      padding: 18px;
+      border-radius: 16px;
+      font-size: 1.15rem;
+      font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 8px 22px rgba(255, 0, 127, 0.32);
+      box-shadow: 0 10px 26px rgba(255, 0, 127, 0.38);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       margin-top: 10px;
     }
 
     .submit-btn:active:not(:disabled) {
-      transform: scale(0.97);
+      transform: scale(0.96);
       box-shadow: 0 4px 12px rgba(255, 0, 127, 0.2);
     }
 
@@ -385,7 +380,7 @@
       }
     }
 
-    // 2. 從 GAS 取得課程並動態渲染（帶有延遲彈跳登場效果）
+    // 2. 從 GAS 取得課程並動態渲染
     async function fetchCourses() {
       const container = document.getElementById("courseCardList");
       try {
@@ -397,15 +392,7 @@
 
           data.courses.forEach((course, index) => {
             const isChecked = index === 0 ? "checked" : ""; 
-            // 卡片延遲 0.1 秒依次彈跳登場
             const delay = (index * 0.1).toFixed(2);
-            
-            // 第一張卡片顯示 HOT 熱門標籤
-            const hotTagHtml = index === 0 ? `
-              <span class="hot-tag">
-                <span class="pulse-dot"></span>HOT 熱門
-              </span>
-            ` : '';
 
             const cardHtml = `
               <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
@@ -422,7 +409,6 @@
                   
                   <div class="course-header">
                     <span class="course-name">${course.courseName}</span>
-                    ${hotTagHtml}
                   </div>
 
                   <div class="course-info-group">
