@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>課程預約</title>
+  <title>文舞集-課程預約</title>
   <!-- LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -28,6 +28,73 @@
       margin-bottom: 20px;
       font-size: 22px;
     }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #424245;
+    }
+
+    /* 🎴 卡片式課程選擇器樣式 */
+    .course-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .course-card {
+      border: 2px solid #e5e5ea;
+      border-radius: 12px;
+      padding: 14px 16px;
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      position: relative;
+    }
+    .course-card:hover {
+      border-color: #ff007f;
+      background-color: #fff0f6;
+    }
+    .course-card.selected {
+      border-color: #ff007f;
+      background-color: #fff0f6;
+      box-shadow: 0 2px 8px rgba(255, 0, 127, 0.15);
+    }
+    .course-card-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1d1d1f;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .course-card-title .checkmark {
+      display: none;
+      color: #ff007f;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .course-card.selected .checkmark {
+      display: inline;
+    }
+    .course-card-meta {
+      font-size: 13px;
+      color: #6e6e73;
+      line-height: 1.5;
+    }
+
+    /* 載入中骨架 Placeholder */
+    .loading-placeholder {
+      text-align: center;
+      padding: 20px;
+      color: #86868b;
+      font-size: 14px;
+      background: #fafafa;
+      border-radius: 12px;
+      border: 1px dashed #d2d2d7;
+    }
+
     .form-group {
       margin-bottom: 18px;
     }
@@ -38,7 +105,7 @@
       margin-bottom: 6px;
       color: #424245;
     }
-    input, select {
+    input {
       width: 100%;
       padding: 12px;
       border: 1px solid #d2d2d7;
@@ -48,19 +115,8 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    input:focus, select:focus {
+    input:focus {
       border-color: #ff007f;
-    }
-    .course-detail-box {
-      background-color: #fff0f6;
-      border: 1px solid #ffccd5;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 8px;
-      font-size: 13px;
-      color: #d6006e;
-      display: none;
-      line-height: 1.5;
     }
     button {
       width: 100%;
@@ -92,15 +148,15 @@
 <body>
 
 <div class="container">
-  <h2>課程預約</h2>
+  <h2>文舞集 課程預約</h2>
   
   <form id="bookingForm">
     <div class="form-group">
-      <label for="courseSelect">選擇課程</label>
-      <select id="courseSelect" required onchange="updateCourseDetail()">
-        <option value="">載入中...</option>
-      </select>
-      <div id="courseDetail" class="course-detail-box"></div>
+      <div class="section-title">請選擇預約課程</div>
+      <div id="courseCardsList" class="course-cards-container">
+        <div class="loading-placeholder">⚡ 課程載入中...</div>
+      </div>
+      <input type="hidden" id="selectedCourseName" required>
     </div>
 
     <div class="form-group">
@@ -125,11 +181,11 @@
   const MY_LIFF_ID = "2010788391-bIBpQ7sB";
 
   let liffProfile = null;
-  let fullCourseMap = {}; // 存放詳細課程資料 (老師, 時間)
+  let coursesDataList = [];
 
   document.addEventListener("DOMContentLoaded", function() {
     initLiff();
-    loadCoursesFast(); // 啟動漸進式快取載入
+    loadCoursesFast(); // 啟動快取與漸進式載入
   });
 
   async function initLiff() {
@@ -146,86 +202,78 @@
   }
 
   /**
-   * ⚡ 快取 + 雙階段非同步載入機制
+   * ⚡ 快取 + 背景非同步漸進載入（卡片版）
    */
   async function loadCoursesFast() {
-    const select = document.getElementById("courseSelect");
-
-    // 0. 優先讀取 LocalStorage 快取（0 秒瞬間呈現）
-    const cachedNames = localStorage.getItem("cached_course_names");
-    const cachedDetails = localStorage.getItem("cached_course_details");
-
-    if (cachedDetails) {
-      fullCourseMap = JSON.parse(cachedDetails);
+    // 1. 優先從 LocalStorage 讀取快取（0 秒瞬間出現卡片）
+    const cachedData = localStorage.getItem("cached_courses_full_cards");
+    if (cachedData) {
+      coursesDataList = JSON.parse(cachedData);
+      renderCourseCards(coursesDataList);
     }
 
-    if (cachedNames) {
-      renderSelectOptions(JSON.parse(cachedNames));
-    }
-
-    // 1. 第一階段：背景極速抓取課程名稱清單
+    // 2. 背景默默向 GAS 發送 API 請求最新課程
     try {
-      const resNames = await fetch(`${GAS_WEB_APP_URL}?action=getCourseNames`);
-      const dataNames = await resNames.json();
+      const response = await fetch(GAS_WEB_APP_URL);
+      const data = await response.json();
 
-      if (dataNames.status === "success" && dataNames.courseNames.length > 0) {
-        renderSelectOptions(dataNames.courseNames);
-        localStorage.setItem("cached_course_names", JSON.stringify(dataNames.courseNames));
+      if (data.status === "success" && data.courses) {
+        coursesDataList = data.courses;
+        // 更新快取
+        localStorage.setItem("cached_courses_full_cards", JSON.stringify(coursesDataList));
+        // 靜默更新前端卡片
+        renderCourseCards(coursesDataList);
       }
     } catch (e) {
-      console.warn("無法取得最新課程名稱列表，使用快取或備用機制。");
-    }
-
-    // 2. 第二階段：背景靜默補充詳細資料 (老師、時間)
-    try {
-      const resDetails = await fetch(`${GAS_WEB_APP_URL}`);
-      const dataDetails = await resDetails.json();
-
-      if (dataDetails.status === "success") {
-        fullCourseMap = {};
-        dataDetails.courses.forEach(c => {
-          fullCourseMap[c.courseName] = c;
-        });
-        localStorage.setItem("cached_course_details", JSON.stringify(fullCourseMap));
-        updateCourseDetail(); // 若使用者已選擇，及時刷新細節
-      }
-    } catch (e) {
-      console.warn("詳細課程資料載入失敗。");
+      console.warn("無法取得最新課程清單，維持快取顯示。");
     }
   }
 
-  function renderSelectOptions(names) {
-    const select = document.getElementById("courseSelect");
-    const currentVal = select.value;
-    select.innerHTML = '<option value="">-- 請選擇舞蹈課程 --</option>';
+  /**
+   * 渲染卡片清單 UI
+   */
+  function renderCourseCards(courses) {
+    const container = document.getElementById("courseCardsList");
+    const selectedInput = document.getElementById("selectedCourseName");
+    const currentSelected = selectedInput.value;
 
-    names.forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
+    if (!courses || courses.length === 0) {
+      container.innerHTML = `<div class="loading-placeholder">目前暫無開放預約的課程</div>`;
+      return;
+    }
+
+    let cardsHtml = "";
+    courses.forEach(c => {
+      const isSelected = (c.courseName === currentSelected);
+      cardsHtml += `
+        <div class="course-card ${isSelected ? 'selected' : ''}" onclick="selectCourseCard('${c.courseName}', this)">
+          <div class="course-card-title">
+            <span>📖 ${c.courseName}</span>
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="course-card-meta">
+            👤 授課老師：<b>${c.teacher || "未定"}</b><br>
+            ⏰ 上課時間：<b>${c.timeInfo || "依公告為主"}</b>
+          </div>
+        </div>
+      `;
     });
 
-    if (currentVal) {
-      select.value = currentVal;
-    }
-    updateCourseDetail();
+    container.innerHTML = cardsHtml;
   }
 
-  function updateCourseDetail() {
-    const selected = document.getElementById("courseSelect").value;
-    const detailBox = document.getElementById("courseDetail");
+  /**
+   * 點擊選擇卡片
+   */
+  function selectCourseCard(courseName, element) {
+    document.getElementById("selectedCourseName").value = courseName;
+    
+    // 清除其他卡片的選取狀態
+    const cards = document.querySelectorAll(".course-card");
+    cards.forEach(card => card.classList.remove("selected"));
 
-    if (selected && fullCourseMap[selected]) {
-      const item = fullCourseMap[selected];
-      detailBox.innerHTML = `
-        👤 授課老師：<b>${item.teacher || "未定"}</b><br>
-        ⏰ 上課時間：<b>${item.timeInfo || "依公告為主"}</b>
-      `;
-      detailBox.style.display = "block";
-    } else {
-      detailBox.style.display = "none";
-    }
+    // 為當前卡片加上選取樣式
+    element.classList.add("selected");
   }
 
   // 提交報名表單
@@ -235,12 +283,12 @@
     const submitBtn = document.getElementById("submitBtn");
     const statusMsg = document.getElementById("statusMsg");
     
-    const selectedCourse = document.getElementById("courseSelect").value;
+    const selectedCourse = document.getElementById("selectedCourseName").value;
     const userName = document.getElementById("userName").value.trim();
     const userPhone = document.getElementById("userPhone").value.trim();
 
     if (!selectedCourse) {
-      alert("請選擇課程！");
+      alert("請先點擊選擇您要預約的課程卡片！");
       return;
     }
 
@@ -267,8 +315,13 @@
       if (result.status === "success") {
         statusMsg.style.color = "#00875a";
         statusMsg.innerHTML = `🎉 預約成功！<br>課程：<b>${result.courseName}</b>`;
+        
+        // 重設表單與選取狀態
         document.getElementById("bookingForm").reset();
-        document.getElementById("courseDetail").style.display = "none";
+        document.getElementById("selectedCourseName").value = "";
+        const cards = document.querySelectorAll(".course-card");
+        cards.forEach(card => card.classList.remove("selected"));
+
       } else if (result.status === "duplicate") {
         statusMsg.style.color = "#ff9500";
         statusMsg.textContent = result.message;
