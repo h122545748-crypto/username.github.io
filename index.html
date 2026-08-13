@@ -2,152 +2,694 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>舞蹈課程預約</title>
-  <!-- 載入 LINE LIFF SDK -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>文舞集 目前課程</title>
+  
+  <!-- 引入 LINE LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 16px; background: #f8f9fa; }
-    .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    h2 { text-align: center; color: #333; margin-top: 0; }
-    .loading { text-align: center; color: #888; padding: 20px; }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-    button { width: 100%; padding: 12px; background: #ff007f; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    button:disabled { background: #ccc; }
+    :root {
+      --animated-gradient: linear-gradient(90deg, #ff007f, #7928ca, #00d2ff, #ff007f);
+      --primary-pink: #ff007f;
+      --border-color: #e2e2e8;
+      --text-main: #1d1d1f;
+      --text-sub: #6e6e73;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f2f3f8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-main);
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+    }
+
+    /* 滿版 App 容器 */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      background: #ffffff;
+      position: relative;
+    }
+
+    /* --- 1. 頂部固定區 --- */
+    .fixed-top-panel {
+      background: #ffffff;
+      padding: 20px 18px 12px 18px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    @keyframes titleGradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 0 6px 0;
+      font-size: 1.75rem;
+      font-weight: 900;
+      background: var(--animated-gradient);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: titleGradientFlow 3s ease infinite;
+      letter-spacing: 1px;
+    }
+
+    .user-welcome {
+      text-align: center;
+      color: var(--text-sub);
+      font-size: 0.88rem;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #e5e5ea;
+    }
+
+    .section-title {
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: block;
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    /* --- 2. 中間純滑動卡片區 --- */
+    .scrollable-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .course-radio-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .course-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-bottom: 10px;
+    }
+
+    @keyframes springSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.92);
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(-6px) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card-item-wrapper {
+      opacity: 0;
+      animation: springSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .course-card {
+      position: relative;
+      background-color: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      cursor: pointer;
+      border: 4px solid var(--border-color);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+      display: block;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .course-card:active {
+      transform: scale(0.70) !important;
+    }
+
+    @keyframes rotateNeon {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .course-card::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 250%;
+      height: 500%;
+      background: conic-gradient(#ff007f, #7928ca, #00d2ff, #ff007f);
+      transform: translate(-50%, -50%) rotate(0deg);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -2;
+    }
+
+    .course-card::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      background: #ffffff;
+      border-radius: 12px;
+      z-index: -1;
+    }
+
+    .course-radio-input:checked + .course-card {
+      border-color: transparent;
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 10px 24px rgba(255, 0, 127, 0.3);
+    }
+
+    .course-radio-input:checked + .course-card::before {
+      opacity: 1;
+      animation: rotateNeon 3s linear infinite;
+    }
+
+    .card-check-icon {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 3px solid #ccc;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #fff;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    @keyframes popSpin {
+      0% { transform: scale(0.2) rotate(-180deg); }
+      70% { transform: scale(1.3) rotate(15deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .course-radio-input:checked + .course-card .card-check-icon {
+      background: linear-gradient(135deg, #ff007f, #7928ca);
+      border-color: transparent;
+      animation: popSpin 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .course-radio-input:checked + .course-card .card-check-icon::after {
+      content: "✓";
+      font-weight: 900;
+    }
+
+    .course-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .course-name {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text-main);
+      padding-right: 28px;
+      line-height: 1.35;
+    }
+
+    .course-info-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.88rem;
+      color: var(--text-sub);
+    }
+
+    .course-info-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .loading-text {
+      text-align: center;
+      color: var(--text-sub);
+      padding: 30px 0;
+      font-size: 0.95rem;
+    }
+
+    /* --- 3. 下方固定表單區 --- */
+    .fixed-bottom-panel {
+      background: #ffffff;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 16px 18px 20px 18px;
+      box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .bottom-form-layout {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .submit-btn-square {
+      width: 105px;
+      flex-shrink: 0;
+      background: var(--animated-gradient);
+      background-size: 200% 200%;
+      animation: titleGradientFlow 3s ease infinite;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 0.98rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255, 0, 127, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.35;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .submit-btn-square:active:not(:disabled) {
+      transform: scale(0.94);
+      box-shadow: 0 2px 8px rgba(255, 0, 127, 0.2);
+    }
+
+    .submit-btn-square:disabled {
+      background: #e0e0e0;
+      animation: none;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #a0a0a0;
+    }
+
+    .input-fields-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-control-compact {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 0.92rem;
+      background-color: #fafafa;
+      transition: all 0.25s ease;
+      outline: none;
+    }
+
+    .form-control-compact:focus {
+      background-color: #fff;
+      border-color: var(--primary-pink);
+      box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
+    }
+
+    /* --- 4. 強化版超大字體結果彈窗 (Custom Large Modal) --- */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      width: 100%;
+      max-width: 360px;
+      border-radius: 24px;
+      padding: 28px 22px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      transform: scale(0.8);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 3.5rem;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    /* 超大字體標題 */
+    .modal-title {
+      font-size: 1.85rem;
+      font-weight: 900;
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    .modal-title.success {
+      color: #10b981; /* 強烈綠色 */
+    }
+
+    .modal-title.error {
+      color: #ef4444; /* 強烈紅色 */
+    }
+
+    /* 內文醒目設定 */
+    .modal-body {
+      font-size: 1.05rem;
+      color: #4b5563;
+      margin-bottom: 24px;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: white;
+      background: #1d1d1f;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>💃 課程預約系統</h2>
-
-  <div id="loading" class="loading">⚡ 正在快速載入課程中...</div>
-
-  <form id="bookingForm" style="display: none;">
-    <div class="form-group">
-      <label for="courseSelect">選擇課程</label>
-      <select id="courseSelect" required>
-        <!-- 動態繪製課程選項 -->
-      </select>
+  <div class="app-container">
+    
+    <!-- 頂部固定區（固定三行） -->
+    <div class="fixed-top-panel">
+      <h2>文舞集 目前課程</h2>
+      <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
+      <span class="section-title">選擇欲預約的舞蹈課程：</span>
     </div>
 
-    <div class="form-group">
-      <label for="userName">姓名</label>
-      <input type="text" id="userName" placeholder="請輸入姓名" required>
+    <form id="bookingForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+      
+      <!-- 中間可滾動區（僅卡片清單） -->
+      <div class="scrollable-content">
+        <div id="courseCardList" class="course-card-list">
+          <div class="loading-text">✨ 課程載入中，請稍候...</div>
+        </div>
+      </div>
+
+      <!-- 下方固定表單區 -->
+      <div class="fixed-bottom-panel">
+        <div class="bottom-form-layout">
+          
+          <button type="submit" class="submit-btn-square" id="submitBtn" disabled>
+            確認<br>預約
+          </button>
+
+          <div class="input-fields-group">
+            <input 
+              type="text" 
+              id="name" 
+              class="form-control-compact" 
+              placeholder="請輸入姓名" 
+              required
+            >
+            <input 
+              type="tel" 
+              id="phone" 
+              class="form-control-compact" 
+              placeholder="0912345678" 
+              maxlength="10" 
+              required
+            >
+          </div>
+
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- 客製超大字體結果彈窗 -->
+  <div id="customModal" class="modal-overlay">
+    <div class="modal-box">
+      <div id="modalIcon" class="modal-icon">🎉</div>
+      <div id="modalTitle" class="modal-title success">報名成功</div>
+      <div id="modalBody" class="modal-body">內容加載中...</div>
+      <button type="button" class="modal-btn" onclick="closeCustomModal()">確定</button>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="userPhone">電話</label>
-      <input type="tel" id="userPhone" placeholder="請輸入電話號碼" required>
-    </div>
+  <script>
+    // ⚠️ 請填入你的設定
+    const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyBDeJ6xQZdV56UEDWRYIik7ee_sBMbnliEv1fYCDog7B_tS-GVYcOJ2nEdCQacKnOFmQ/exec";
 
-    <button type="submit" id="submitBtn">確認預約</button>
-  </form>
-</div>
+    let lineProfile = { userId: "", displayName: "" };
 
-<script>
-  // ⚙️ 設定區：請填入您的 GAS 與 LIFF 資料
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzSeprRLPTPDOAKAG4c0ysXzaQ5HnYf6Sy3ONyeD7sgDcumJRrUxgtGhXXOBB779FX0yQ/exec";
-  const LIFF_ID = "2010788391-bIBpQ7sB";
-
-  let userProfile = null;
-
-  // 🚀 關鍵加速 1：網頁載入瞬間「平行發起」課程抓取，不等 LIFF 初始化
-  const fetchCoursesPromise = fetch(GAS_URL)
-    .then(res => res.json())
-    .catch(err => {
-      console.error("抓取課程失敗:", err);
-      return null;
+    document.addEventListener("DOMContentLoaded", async () => {
+      await initLIFF();
+      await fetchCourses();
     });
 
-  // 初始化流程
-  window.onload = async function() {
-    try {
-      // 1. 初始化 LIFF
-      await liff.init({ liffId: LIFF_ID });
-      if (liff.isLoggedIn()) {
-        userProfile = await liff.getProfile();
-      } else {
-        liff.login();
+    // 1. LIFF 初始化
+    async function initLIFF() {
+      const welcomeEl = document.getElementById("userWelcome");
+      const submitBtn = document.getElementById("submitBtn");
+
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        const profile = await liff.getProfile();
+        lineProfile.userId = profile.userId;
+        lineProfile.displayName = profile.displayName;
+
+        welcomeEl.innerText = `👋 你好，${lineProfile.displayName}`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "確認<br>預約";
+
+      } catch (err) {
+        console.error("LIFF 初始化失敗:", err);
+        welcomeEl.innerText = "⚠️ 請在 LINE App 內開啟此頁面";
+      }
+    }
+
+    // 2. 從 GAS 取得課程並動態渲染
+    async function fetchCourses() {
+      const container = document.getElementById("courseCardList");
+      try {
+        const response = await fetch(GAS_URL);
+        const data = await response.json();
+
+        if (data.status === "success" && data.courses.length > 0) {
+          container.innerHTML = ""; 
+
+          data.courses.forEach((course, index) => {
+            const isChecked = index === 0 ? "checked" : ""; 
+            const delay = (index * 0.1).toFixed(2);
+
+            // 遇到括號自動換行
+            const formattedCourseName = course.courseName
+              .replace(/[\(（]/g, '<br>(');
+
+            const cardHtml = `
+              <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
+                <input 
+                  type="radio" 
+                  name="courseSelection" 
+                  id="course_${index}" 
+                  value="${course.courseName}" 
+                  class="course-radio-input"
+                  ${isChecked}
+                >
+                <label for="course_${index}" class="course-card">
+                  <div class="card-check-icon"></div>
+                  
+                  <div class="course-header">
+                    <span class="course-name">${formattedCourseName}</span>
+                  </div>
+
+                  <div class="course-info-group">
+                    <div class="course-info-item">
+                      <span>👤 授課老師：${course.teacher}</span>
+                    </div>
+                    <div class="course-info-item">
+                      <span>⏰ 上課時間：${course.timeInfo}</span>
+                    </div>
+                    <div class="course-info-item">
+                      <span>👥 報名上限：${course.maxCapacity} 人</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            `;
+            container.insertAdjacentHTML("beforeend", cardHtml);
+          });
+        } else {
+          container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
+      }
+    }
+
+    // 3. 表單送出到 GAS
+    document.getElementById("bookingForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      if (!lineProfile.userId) {
+        showCustomModal({
+          isSuccess: false,
+          title: "報名失敗",
+          body: "無法讀取您的 LINE 身份，請確認已在 LINE 內開啟網頁！"
+        });
+        return;
+      }
+      
+      const selectedCourse = document.querySelector('input[name="courseSelection"]:checked');
+      if (!selectedCourse) {
+        showCustomModal({
+          isSuccess: false,
+          title: "報名失敗",
+          body: "請先選擇欲報名的課程！"
+        });
         return;
       }
 
-      // 2. 取得平行載入的課程資料
-      const data = await fetchCoursesPromise;
-      
-      if (data && data.status === "success") {
-        renderCourseOptions(data.courses);
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("bookingForm").style.display = "block";
-      } else {
-        document.getElementById("loading").innerText = "❌ 載入課程失敗，請重新整理。";
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const submitBtn = document.getElementById("submitBtn");
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "處理中";
+
+      const payload = {
+        userId: lineProfile.userId,
+        displayName: lineProfile.displayName,
+        name: name,
+        phone: phone,
+        item: selectedCourse.value
+      };
+
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if (result.status === "success") {
+          // 🎉 增加報名者姓名 + 超大字體提示
+          showCustomModal({
+            isSuccess: true,
+            title: "報名成功！",
+            body: `預約學員：<b>${name}</b><br>報名課程：${result.courseName}<br>狀態：${result.bookingStatus}`,
+            autoCloseLiff: true
+          });
+        } else if (result.status === "duplicate") {
+          showCustomModal({
+            isSuccess: false,
+            title: "報名失敗",
+            body: result.message
+          });
+        } else {
+          showCustomModal({
+            isSuccess: false,
+            title: "報名失敗",
+            body: result.message
+          });
+        }
+      } catch (err) {
+        showCustomModal({
+          isSuccess: false,
+          title: "報名失敗",
+          body: "系統連線錯誤，請稍後再試！"
+        });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "確認<br>預約";
       }
-
-    } catch (err) {
-      console.error("系統初始化失敗:", err);
-      document.getElementById("loading").innerText = "❌ 系統初始化失敗。";
-    }
-  };
-
-  /**
-   * 🚀 關鍵加速 2：使用 DocumentFragment 進行單次 DOM 批量繪製
-   */
-  function renderCourseOptions(courses) {
-    const select = document.getElementById("courseSelect");
-    select.innerHTML = "";
-
-    const fragment = document.createDocumentFragment();
-
-    courses.forEach(course => {
-      const option = document.createElement("option");
-      option.value = course.courseName;
-      option.textContent = `${course.courseName} (${course.teacher} / ${course.timeInfo})`;
-      fragment.appendChild(option);
     });
 
-    select.appendChild(fragment);
-  }
+    // 4. 超大字體彈窗控制邏輯
+    let shouldCloseLiff = false;
 
-  // 表單送出處理
-  document.getElementById("bookingForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const submitBtn = document.getElementById("submitBtn");
-    submitBtn.disabled = true;
-    submitBtn.innerText = "預約處理中...";
+    function showCustomModal({ isSuccess, title, body, autoCloseLiff = false }) {
+      const modal = document.getElementById("customModal");
+      const iconEl = document.getElementById("modalIcon");
+      const titleEl = document.getElementById("modalTitle");
+      const bodyEl = document.getElementById("modalBody");
 
-    const payload = {
-      userId: userProfile ? userProfile.userId : "UNKNOWN",
-      displayName: userProfile ? userProfile.displayName : "網頁學員",
-      name: document.getElementById("userName").value.trim(),
-      phone: document.getElementById("userPhone").value.trim(),
-      item: document.getElementById("courseSelect").value
-    };
+      shouldCloseLiff = autoCloseLiff;
 
-    try {
-      const response = await fetch(GAS_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-
-      if (result.status === "success") {
-        alert(`🎉 預約成功！\n課程：${result.courseName}`);
-        liff.closeWindow();
-      } else if (result.status === "duplicate") {
-        alert(result.message);
+      if (isSuccess) {
+        iconEl.innerText = "🎉";
+        titleEl.className = "modal-title success";
       } else {
-        alert("❌ 預約失敗：" + result.message);
+        iconEl.innerText = "⚠️";
+        titleEl.className = "modal-title error";
       }
-    } catch (err) {
-      alert("❌ 網路連線異常，請稍後再試。");
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerText = "確認預約";
-    }
-  });
-</script>
 
+      titleEl.innerText = title;
+      bodyEl.innerHTML = body;
+
+      modal.classList.add("active");
+    }
+
+    function closeCustomModal() {
+      document.getElementById("customModal").classList.remove("active");
+      if (shouldCloseLiff && typeof liff !== "undefined" && liff.closeWindow) {
+        liff.closeWindow();
+      }
+    }
+  </script>
 </body>
 </html>
