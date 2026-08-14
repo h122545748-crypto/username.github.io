@@ -10,7 +10,6 @@
   <style>
     :root {
       --animated-gradient: linear-gradient(90deg, #ff007f, #7928ca, #00d2ff, #ff007f);
-      --trial-gradient: linear-gradient(90deg, #f59e0b, #d97706);
       --primary-pink: #ff007f;
       --border-color: #e2e2e8;
       --text-main: #1d1d1f;
@@ -141,10 +140,8 @@
     .course-card::before {
       content: "";
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 250%;
-      height: 500%;
+      top: 50%; left: 50%;
+      width: 250%; height: 500%;
       background: conic-gradient(#ff007f, #7928ca, #00d2ff, #ff007f);
       transform: translate(-50%, -50%) rotate(0deg);
       opacity: 0;
@@ -172,7 +169,6 @@
       animation: rotateNeon 3s linear infinite;
     }
 
-    /* 🌟 開放體驗小標籤 */
     .trial-badge {
       position: absolute;
       top: 14px;
@@ -189,10 +185,8 @@
 
     .card-check-icon {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 26px;
-      height: 26px;
+      top: 16px; right: 16px;
+      width: 26px; height: 26px;
       border-radius: 50%;
       border: 3px solid #ccc;
       background: #fff;
@@ -257,65 +251,37 @@
       font-size: 0.95rem;
     }
 
+    /* 🔒 固定高度下方欄位 */
     .fixed-bottom-panel {
       background: #ffffff;
       border-top: 1px solid rgba(0, 0, 0, 0.08);
-      padding: 14px 18px 18px 18px;
+      padding: 12px 18px 16px 18px;
       box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08);
       z-index: 10;
       flex-shrink: 0;
+      height: 195px; /* 高度完全固定，絕不跳動 */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .bottom-form-layout {
       display: flex;
       gap: 12px;
       align-items: stretch;
-    }
-
-    /* 上下雙按鈕區塊 */
-    .button-group-vertical {
-      width: 105px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .trial-btn-square {
-      flex: 1;
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .trial-btn-square:active:not(:disabled) { transform: scale(0.94); }
-
-    .trial-btn-square:disabled {
-      background: #e0e0e0;
-      box-shadow: none;
-      cursor: not-allowed;
-      color: #a0a0a0;
+      height: 100%;
     }
 
     .submit-btn-square {
-      flex: 1.2;
+      width: 105px;
+      flex-shrink: 0;
       background: var(--animated-gradient);
       background-size: 200% 200%;
       animation: titleGradientFlow 3s ease infinite;
       color: white;
       border: none;
-      border-radius: 12px;
-      font-size: 0.95rem;
+      border-radius: 14px;
+      font-size: 1.05rem;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 6px 18px rgba(255, 0, 127, 0.35);
@@ -340,13 +306,74 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      justify-content: center;
+      justify-content: space-between;
+    }
+
+    /* 「我要體驗」開關列 */
+    .trial-switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f3f4f6;
+      padding: 6px 12px;
+      border-radius: 10px;
+      height: 38px;
+      transition: all 0.25s ease;
+    }
+
+    .trial-switch-label {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    /* Switch 切換鈕 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 22px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px; width: 16px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* 關閉體驗時反白 */
+    .trial-switch-row.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      background: #e5e7eb;
     }
 
     .form-control-compact {
       width: 100%;
-      padding: 10px 12px;
+      height: 38px;
+      padding: 0 12px;
       border: 2px solid var(--border-color);
       border-radius: 10px;
       font-size: 0.9rem;
@@ -361,7 +388,6 @@
       box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
     }
 
-    /* 體驗日期下拉選單樣式 */
     .select-trial-date {
       border-color: #f59e0b !important;
       background-color: #fffbe1 !important;
@@ -497,22 +523,29 @@
         </div>
       </div>
 
+      <!-- 🔒 固定高度的下方表單面板 -->
       <div class="fixed-bottom-panel">
         <div class="bottom-form-layout">
           
-          <div class="button-group-vertical">
-            <button type="button" class="trial-btn-square" id="trialBtn" disabled onclick="submitBooking(true)">
-              體驗<br>課程
-            </button>
-            <button type="button" class="submit-btn-square" id="submitBtn" disabled onclick="submitBooking(false)">
-              確認<br>預約
-            </button>
-          </div>
+          <button type="submit" class="submit-btn-square" id="submitBtn" disabled>
+            確認<br>預約
+          </button>
 
           <div class="input-fields-group">
-            <!-- 🌟 動態顯示：體驗日期選單 -->
+            
+            <!-- 「我要體驗」切換開關列 -->
+            <div id="trialSwitchRow" class="trial-switch-row disabled">
+              <label class="trial-switch-label" for="trialCheckbox">
+                <span>🌟 我要體驗</span>
+              </label>
+              <label class="switch">
+                <input type="checkbox" id="trialCheckbox" onchange="toggleTrialDateSelect()">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <!-- 動態顯示體驗日期 (預設隱藏，維持佈局空間) -->
             <select id="trialDateSelect" class="form-control-compact select-trial-date" style="display: none;">
-              <!-- JS 動態生成未來 3 週日期 -->
             </select>
 
             <input 
@@ -555,10 +588,10 @@
 
   <script>
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyQxRcEAICKkvs9btG-R8huGJuPSmIRMpKiuL9uiSbbv_V2jd1FeY3dG8RgqF2zAFJMKw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxv1C9nLEgb4An-mzJFwnc1cPi-gO909ZLJNzFtaGJKsXqonMTFCKxcvdsq2woBj7j9ug/exec";
 
     let lineProfile = { userId: "", displayName: "" };
-    let globalCoursesData = []; // 儲存課程陣列
+    let globalCoursesData = []; 
 
     document.addEventListener("DOMContentLoaded", async () => {
       const cachedCourses = localStorage.getItem("wenwu_courses_cache");
@@ -593,7 +626,7 @@
 
         welcomeEl.innerText = `👋 你好，${lineProfile.displayName}`;
         submitBtn.disabled = false;
-        updateFormState(); // 根據選擇更新體驗按鈕與日期下拉選單
+        updateFormState();
 
       } catch (err) {
         console.error("LIFF 初始化失敗:", err);
@@ -684,11 +717,11 @@
       }
     }
 
-    // 🌟 更新體驗按鈕與未來 3 週日期下拉選單
+    // 🌟 更新「我要體驗」開關與選單狀態
     function updateFormState() {
       const selectedRadio = document.querySelector('input[name="courseSelection"]:checked');
-      const trialBtn = document.getElementById("trialBtn");
-      const trialDateSelect = document.getElementById("trialDateSelect");
+      const trialSwitchRow = document.getElementById("trialSwitchRow");
+      const trialCheckbox = document.getElementById("trialCheckbox");
 
       if (!selectedRadio || globalCoursesData.length === 0) return;
 
@@ -696,27 +729,40 @@
       const courseObj = globalCoursesData.find(c => c.courseName === selectedCourseName);
 
       if (courseObj && courseObj.trialStatus === "開放") {
-        // 開放體驗：啟用按鈕，生成日期
-        trialBtn.disabled = false;
+        // 開放體驗：取消反白
+        trialSwitchRow.classList.remove("disabled");
         
+        // 生成對應的未來 3 週日期
+        const trialDateSelect = document.getElementById("trialDateSelect");
         const dates = generateNextThreeDates(courseObj.timeInfo);
         trialDateSelect.innerHTML = "";
         dates.forEach(d => {
           const opt = document.createElement("option");
           opt.value = d;
-          opt.textContent = `🗓️ 選擇體驗日：${d}`;
+          opt.textContent = `🗓️ 體驗日：${d}`;
           trialDateSelect.appendChild(opt);
         });
-        
+
+      } else {
+        // 關閉體驗：反白、強制取消勾選並隱藏日期選單
+        trialSwitchRow.classList.add("disabled");
+        trialCheckbox.checked = false;
+        toggleTrialDateSelect();
+      }
+    }
+
+    // 🌟 控制體驗日期下拉選單之顯示/隱藏
+    function toggleTrialDateSelect() {
+      const trialCheckbox = document.getElementById("trialCheckbox");
+      const trialDateSelect = document.getElementById("trialDateSelect");
+
+      if (trialCheckbox.checked) {
         trialDateSelect.style.display = "block";
       } else {
-        // 關閉體驗：反白按鈕，隱藏下拉選單
-        trialBtn.disabled = true;
         trialDateSelect.style.display = "none";
       }
     }
 
-    // 🌟 輔助函式：計算未來 3 個對應星期幾的日期
     function generateNextThreeDates(timeStr) {
       const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
                        "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
@@ -736,9 +782,8 @@
 
       const results = [];
       let today = new Date();
-      
+
       if (targetDay === -1) {
-        // 若無法辨識星期幾，預設算未來 3 個 7 天
         for (let i = 1; i <= 3; i++) {
           let nextD = new Date();
           nextD.setDate(today.getDate() + (i * 7));
@@ -749,7 +794,7 @@
 
       let count = 0;
       let current = new Date();
-      current.setDate(current.getDate() + 1); // 從明天開始算
+      current.setDate(current.getDate() + 1);
 
       while (count < 3) {
         if (current.getDay() === targetDay) {
@@ -770,16 +815,9 @@
       return `${month}/${date} (${dayName})`;
     }
 
-    // 🌟 表單送出處置 (區分體驗或正式)
-    async function submitBooking(isTrial = false) {
-      const nameInput = document.getElementById("name");
-      const phoneInput = document.getElementById("phone");
-
-      if (!nameInput.checkValidity() || !phoneInput.checkValidity()) {
-        nameInput.reportValidity();
-        phoneInput.reportValidity();
-        return;
-      }
+    // 🌟 表單統一送出
+    document.getElementById("bookingForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
 
       if (!lineProfile.userId) {
         showCustomModal({
@@ -800,16 +838,16 @@
         return;
       }
 
-      const name = nameInput.value.trim();
-      const phone = phoneInput.value.trim();
-      const trialDate = isTrial ? document.getElementById("trialDateSelect").value : "正式報名";
+      const isTrial = document.getElementById("trialCheckbox").checked;
+      const trialDateSelect = document.getElementById("trialDateSelect");
+      const trialDate = isTrial ? trialDateSelect.value : "正式報名";
 
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
       const submitBtn = document.getElementById("submitBtn");
-      const trialBtn = document.getElementById("trialBtn");
       const processingOverlay = document.getElementById("processingOverlay");
 
       submitBtn.disabled = true;
-      trialBtn.disabled = true;
       processingOverlay.classList.add("active");
 
       const payload = {
@@ -859,9 +897,8 @@
         });
       } finally {
         submitBtn.disabled = false;
-        updateFormState();
       }
-    }
+    });
 
     let shouldCloseLiff = false;
 
