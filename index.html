@@ -334,7 +334,7 @@
       box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
     }
 
-    /* --- 4. 強化版超大字體結果彈窗 (Custom Large Modal) --- */
+    /* --- 4. 強化版超大字體結果彈窗 --- */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -380,7 +380,6 @@
       line-height: 1;
     }
 
-    /* 超大字體標題 */
     .modal-title {
       font-size: 1.85rem;
       font-weight: 900;
@@ -388,15 +387,9 @@
       line-height: 1.25;
     }
 
-    .modal-title.success {
-      color: #10b981; /* 強烈綠色 */
-    }
+    .modal-title.success { color: #10b981; }
+    .modal-title.error { color: #ef4444; }
 
-    .modal-title.error {
-      color: #ef4444; /* 強烈紅色 */
-    }
-
-    /* 內文醒目設定 */
     .modal-body {
       font-size: 1.05rem;
       color: #4b5563;
@@ -417,13 +410,71 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
+
+    /* --- 5. ✨ 新增：全螢幕「預約處理中」動態遮罩 --- */
+    .processing-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .processing-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top: 5px solid #ff007f;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .processing-text {
+      color: #ffffff;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      animation: textPulse 1.5s ease-in-out infinite;
+    }
+
+    .processing-subtext {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    @keyframes textPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
   </style>
 </head>
 <body>
 
   <div class="app-container">
     
-    <!-- 頂部固定區（固定三行） -->
+    <!-- 頂部固定區 -->
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
       <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
@@ -432,7 +483,7 @@
 
     <form id="bookingForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
       
-      <!-- 中間可滾動區（僅卡片清單） -->
+      <!-- 中間可滾動區 -->
       <div class="scrollable-content">
         <div id="courseCardList" class="course-card-list">
           <div class="loading-text">✨ 課程載入中，請稍候...</div>
@@ -471,6 +522,13 @@
     </form>
   </div>
 
+  <!-- ✨ 新增：全螢幕預約處理中遮罩 -->
+  <div id="processingOverlay" class="processing-overlay">
+    <div class="spinner"></div>
+    <div class="processing-text">預約資料傳送中...</div>
+    <div class="processing-subtext">請勿關閉視窗，系統正在為您登記</div>
+  </div>
+
   <!-- 客製超大字體結果彈窗 -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
@@ -482,15 +540,24 @@
   </div>
 
   <script>
-    // ⚠️ 請填入你的設定
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx7vfeOoeJaTav7X6H_8L0NtE-kw_FsOxUSbIXoXTz-h-bzY1-dHP6nfjjMF3A912r_/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbySqiVUQ_MKM3po9gwoNIC-cU2Jvee7pzMu2GP4tSv7jZTtLJceX6SrfHd1X35W-qIR8g/exec";
 
     let lineProfile = { userId: "", displayName: "" };
 
     document.addEventListener("DOMContentLoaded", async () => {
+      // ⚡ 1. 秒開暫存：若手機有上次暫存，立即顯示，達到 0 秒載入體驗
+      const cachedCourses = localStorage.getItem("wenwu_courses_cache");
+      if (cachedCourses) {
+        try {
+          renderCourses(JSON.parse(cachedCourses), true);
+        } catch (e) {
+          console.error("讀取快取失敗:", e);
+        }
+      }
+
       await initLIFF();
-      await fetchCourses();
+      await fetchCourses(); // 背景撈最新資料並靜默更新
     });
 
     // 1. LIFF 初始化
@@ -520,7 +587,63 @@
       }
     }
 
-    // 2. 從 GAS 取得課程並動態渲染
+    // 渲染課程卡片 (抽出為獨立 Function)
+    function renderCourses(courses, isFromCache = false) {
+      const container = document.getElementById("courseCardList");
+      if (!courses || courses.length === 0) {
+        if (!isFromCache) {
+          container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
+        }
+        return;
+      }
+
+      // 記住當前學員已勾選的選項（避免背景更新時勾選被重置）
+      const currentlyChecked = document.querySelector('input[name="courseSelection"]:checked')?.value;
+
+      container.innerHTML = ""; 
+
+      courses.forEach((course, index) => {
+        const isChecked = (currentlyChecked ? currentlyChecked === course.courseName : index === 0) ? "checked" : ""; 
+        const delay = isFromCache ? "0" : (index * 0.08).toFixed(2);
+
+        const formattedCourseName = course.courseName.replace(/[\(（]/g, '<br>(');
+
+        const cardHtml = `
+          <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
+            <input 
+              type="radio" 
+              name="courseSelection" 
+              id="course_${index}" 
+              value="${course.courseName}" 
+              class="course-radio-input"
+              ${isChecked}
+            >
+            <label for="course_${index}" class="course-card">
+              <div class="card-check-icon"></div>
+              
+              <div class="course-header">
+                <span class="course-name">${formattedCourseName}</span>
+              </div>
+
+              <div class="course-info-group">
+                <div class="course-info-item">
+                  <span>👤 授課老師：${course.teacher}</span>
+                </div>
+                <div class="course-info-item">
+                  <span>⏰ 上課時間：${course.timeInfo}</span>
+                </div>
+                <div class="course-info-item">
+                  <span>👥 報名上限：${course.maxCapacity} 人</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        `;
+        container.insertAdjacentHTML("beforeend", cardHtml);
+      });
+    }
+
+    // 2. 從 GAS 取得課程（撈完自動寫入暫存）
     async function fetchCourses() {
       const container = document.getElementById("courseCardList");
       try {
@@ -528,55 +651,20 @@
         const data = await response.json();
 
         if (data.status === "success" && data.courses.length > 0) {
-          container.innerHTML = ""; 
-
-          data.courses.forEach((course, index) => {
-            const isChecked = index === 0 ? "checked" : ""; 
-            const delay = (index * 0.1).toFixed(2);
-
-            // 遇到括號自動換行
-            const formattedCourseName = course.courseName
-              .replace(/[\(（]/g, '<br>(');
-
-            const cardHtml = `
-              <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
-                <input 
-                  type="radio" 
-                  name="courseSelection" 
-                  id="course_${index}" 
-                  value="${course.courseName}" 
-                  class="course-radio-input"
-                  ${isChecked}
-                >
-                <label for="course_${index}" class="course-card">
-                  <div class="card-check-icon"></div>
-                  
-                  <div class="course-header">
-                    <span class="course-name">${formattedCourseName}</span>
-                  </div>
-
-                  <div class="course-info-group">
-                    <div class="course-info-item">
-                      <span>👤 授課老師：${course.teacher}</span>
-                    </div>
-                    <div class="course-info-item">
-                      <span>⏰ 上課時間：${course.timeInfo}</span>
-                    </div>
-                    <div class="course-info-item">
-                      <span>👥 報名上限：${course.maxCapacity} 人</span>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            `;
-            container.insertAdjacentHTML("beforeend", cardHtml);
-          });
+          // 渲染最新課程
+          renderCourses(data.courses, false);
+          // 同步存入手機內存
+          localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
         } else {
-          container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
+          if (!localStorage.getItem("wenwu_courses_cache")) {
+            container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
+          }
         }
       } catch (err) {
         console.error(err);
-        container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
+        if (!localStorage.getItem("wenwu_courses_cache")) {
+          container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
+        }
       }
     }
 
@@ -606,9 +694,12 @@
       const name = document.getElementById("name").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const submitBtn = document.getElementById("submitBtn");
+      const processingOverlay = document.getElementById("processingOverlay");
 
+      // 🔒 鎖定按鈕 + 開啟全螢幕動態遮罩
       submitBtn.disabled = true;
       submitBtn.innerText = "處理中";
+      processingOverlay.classList.add("active");
 
       const payload = {
         userId: lineProfile.userId,
@@ -626,8 +717,11 @@
         });
 
         const result = await res.json();
+        
+        // 關閉全螢幕遮罩
+        processingOverlay.classList.remove("active");
+
         if (result.status === "success") {
-          // 🎉 增加報名者姓名 + 超大字體提示
           showCustomModal({
             isSuccess: true,
             title: "報名成功！",
@@ -648,6 +742,7 @@
           });
         }
       } catch (err) {
+        processingOverlay.classList.remove("active");
         showCustomModal({
           isSuccess: false,
           title: "報名失敗",
