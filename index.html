@@ -259,37 +259,107 @@
       box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08);
       z-index: 10;
       flex-shrink: 0;
-      height: 195px; /* 高度完全固定，絕不跳動 */
+      height: 180px; /* 完美固定高度 */
       display: flex;
-      flex-direction: column;
-      justify-content: center;
+      align-items: center;
     }
 
     .bottom-form-layout {
       display: flex;
-      gap: 12px;
-      align-items: stretch;
-      height: 100%;
+      gap: 14px;
+      width: 100%;
+      align-items: flex-end;
     }
 
-    .submit-btn-square {
-      width: 105px;
+    /* 左側按鈕區塊 */
+    .left-action-group {
+      width: 110px;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* 「我要體驗」開關列 (放在按鈕上方) */
+    .trial-switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: #f3f4f6;
+      padding: 4px 8px;
+      border-radius: 8px;
+      height: 32px;
+      transition: all 0.25s ease;
+    }
+
+    .trial-switch-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #374151;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Switch 切換鈕 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 18px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 18px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px; width: 14px;
+      left: 2px; bottom: 2px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    .trial-switch-row.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      background: #e5e7eb;
+    }
+
+    /* 🔲 正方形預約按鈕 */
+    .submit-btn-square {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* 正方形 */
       background: var(--animated-gradient);
       background-size: 200% 200%;
       animation: titleGradientFlow 3s ease infinite;
       color: white;
       border: none;
-      border-radius: 14px;
-      font-size: 1.05rem;
+      border-radius: 16px;
+      font-size: 1.15rem;
       font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 6px 18px rgba(255, 0, 127, 0.35);
+      box-shadow: 0 6px 16px rgba(255, 0, 127, 0.35);
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
+      line-height: 1.2;
     }
 
     .submit-btn-square:active:not(:disabled) { transform: scale(0.94); }
@@ -302,72 +372,12 @@
       color: #a0a0a0;
     }
 
+    /* 右側輸入欄位區塊 */
     .input-fields-group {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-    }
-
-    /* 「我要體驗」開關列 */
-    .trial-switch-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #f3f4f6;
-      padding: 6px 12px;
-      border-radius: 10px;
-      height: 38px;
-      transition: all 0.25s ease;
-    }
-
-    .trial-switch-label {
-      font-size: 0.88rem;
-      font-weight: 800;
-      color: #374151;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    /* Switch 切換鈕 */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 42px;
-      height: 22px;
-    }
-
-    .switch input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .3s;
-      border-radius: 22px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px; width: 16px;
-      left: 3px; bottom: 3px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    input:checked + .slider:before { transform: translateX(20px); }
-
-    /* 關閉體驗時反白 */
-    .trial-switch-row.disabled {
-      opacity: 0.4;
-      pointer-events: none;
-      background: #e5e7eb;
+      gap: 8px;
     }
 
     .form-control-compact {
@@ -376,7 +386,7 @@
       padding: 0 12px;
       border: 2px solid var(--border-color);
       border-radius: 10px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       background-color: #fafafa;
       transition: all 0.25s ease;
       outline: none;
@@ -388,11 +398,17 @@
       box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
     }
 
+    /* 下拉日期欄位固定放在最上方，隱藏時維持不可見但預留 layout */
     .select-trial-date {
       border-color: #f59e0b !important;
       background-color: #fffbe1 !important;
       color: #b45309 !important;
-      font-weight: 700;
+      font-weight: 800;
+      visibility: hidden; /* 預設隱藏但佔用空間 */
+    }
+
+    .select-trial-date.active {
+      visibility: visible;
     }
 
     .modal-overlay {
@@ -527,25 +543,24 @@
       <div class="fixed-bottom-panel">
         <div class="bottom-form-layout">
           
-          <button type="submit" class="submit-btn-square" id="submitBtn" disabled>
-            確認<br>預約
-          </button>
-
-          <div class="input-fields-group">
-            
-            <!-- 「我要體驗」切換開關列 -->
+          <!-- 左側：開關 ＋ 正方形確認預約按鈕 -->
+          <div class="left-action-group">
             <div id="trialSwitchRow" class="trial-switch-row disabled">
-              <label class="trial-switch-label" for="trialCheckbox">
-                <span>🌟 我要體驗</span>
-              </label>
+              <label class="trial-switch-label" for="trialCheckbox">我要體驗</label>
               <label class="switch">
                 <input type="checkbox" id="trialCheckbox" onchange="toggleTrialDateSelect()">
                 <span class="slider"></span>
               </label>
             </div>
 
-            <!-- 動態顯示體驗日期 (預設隱藏，維持佈局空間) -->
-            <select id="trialDateSelect" class="form-control-compact select-trial-date" style="display: none;">
+            <button type="submit" class="submit-btn-square" id="submitBtn" disabled>
+              確認<br>預約
+            </button>
+          </div>
+
+          <!-- 右側：日期(上方) ＋ 姓名 ＋ 電話 -->
+          <div class="input-fields-group">
+            <select id="trialDateSelect" class="form-control-compact select-trial-date">
             </select>
 
             <input 
@@ -588,7 +603,7 @@
 
   <script>
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxv1C9nLEgb4An-mzJFwnc1cPi-gO909ZLJNzFtaGJKsXqonMTFCKxcvdsq2woBj7j9ug/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwAGMYBWFdA0aZFw7RYOKqBjnDBifbhW-dUGJKyMl8viqIn7ddtdg6G6IakdObaNp2REw/exec";
 
     let lineProfile = { userId: "", displayName: "" };
     let globalCoursesData = []; 
@@ -729,7 +744,7 @@
       const courseObj = globalCoursesData.find(c => c.courseName === selectedCourseName);
 
       if (courseObj && courseObj.trialStatus === "開放") {
-        // 開放體驗：取消反白
+        // 開放體驗：解除反白
         trialSwitchRow.classList.remove("disabled");
         
         // 生成對應的未來 3 週日期
@@ -744,22 +759,22 @@
         });
 
       } else {
-        // 關閉體驗：反白、強制取消勾選並隱藏日期選單
+        // 關閉體驗：反白、取消勾選、隱藏下拉選單
         trialSwitchRow.classList.add("disabled");
         trialCheckbox.checked = false;
         toggleTrialDateSelect();
       }
     }
 
-    // 🌟 控制體驗日期下拉選單之顯示/隱藏
+    // 🌟 控制體驗日期下拉選單之顯示/隱藏 (維持版面不跳動)
     function toggleTrialDateSelect() {
       const trialCheckbox = document.getElementById("trialCheckbox");
       const trialDateSelect = document.getElementById("trialDateSelect");
 
       if (trialCheckbox.checked) {
-        trialDateSelect.style.display = "block";
+        trialDateSelect.classList.add("active");
       } else {
-        trialDateSelect.style.display = "none";
+        trialDateSelect.classList.remove("active");
       }
     }
 
@@ -884,7 +899,7 @@
         } else {
           showCustomModal({
             isSuccess: false,
-            title: "報名失敗",
+            title: result.status === "full" ? "名額已滿" : "報名失敗",
             body: result.message
           });
         }
