@@ -251,7 +251,6 @@
       font-size: 0.95rem;
     }
 
-    /* 🔒 固定高度下方欄位 */
     .fixed-bottom-panel {
       background: #ffffff;
       border-top: 1px solid rgba(0, 0, 0, 0.08);
@@ -259,7 +258,7 @@
       box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08);
       z-index: 10;
       flex-shrink: 0;
-      height: 180px; /* 完美固定高度 */
+      height: 180px;
       display: flex;
       align-items: center;
     }
@@ -271,7 +270,6 @@
       align-items: flex-end;
     }
 
-    /* 左側按鈕區塊 */
     .left-action-group {
       width: 110px;
       flex-shrink: 0;
@@ -281,7 +279,6 @@
       align-items: center;
     }
 
-    /* 「我要體驗」開關列 (放在按鈕上方) */
     .trial-switch-row {
       display: flex;
       align-items: center;
@@ -302,7 +299,6 @@
       white-space: nowrap;
     }
 
-    /* Switch 切換鈕 */
     .switch {
       position: relative;
       display: inline-block;
@@ -340,10 +336,9 @@
       background: #e5e7eb;
     }
 
-    /* 🔲 正方形預約按鈕 */
     .submit-btn-square {
       width: 100%;
-      aspect-ratio: 1 / 1; /* 正方形 */
+      aspect-ratio: 1 / 1;
       background: var(--animated-gradient);
       background-size: 200% 200%;
       animation: titleGradientFlow 3s ease infinite;
@@ -372,7 +367,6 @@
       color: #a0a0a0;
     }
 
-    /* 右側輸入欄位區塊 */
     .input-fields-group {
       flex: 1;
       display: flex;
@@ -398,19 +392,19 @@
       box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
     }
 
-    /* 下拉日期欄位固定放在最上方，隱藏時維持不可見但預留 layout */
     .select-trial-date {
       border-color: #f59e0b !important;
       background-color: #fffbe1 !important;
       color: #b45309 !important;
       font-weight: 800;
-      visibility: hidden; /* 預設隱藏但佔用空間 */
+      visibility: hidden;
     }
 
     .select-trial-date.active {
       visibility: visible;
     }
 
+    /* 彈窗遮罩基礎樣式 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -447,6 +441,7 @@
     .modal-title { font-size: 1.85rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
     .modal-title.success { color: #10b981; }
     .modal-title.error { color: #ef4444; }
+    .modal-title.announcement { color: #3b82f6; }
 
     .modal-body {
       font-size: 1.05rem;
@@ -454,6 +449,9 @@
       margin-bottom: 24px;
       line-height: 1.5;
       font-weight: 600;
+      text-align: left;
+      word-break: break-all;
+      white-space: pre-wrap; /* 保持斷行文字 */
     }
 
     .modal-btn {
@@ -467,6 +465,11 @@
       background: #1d1d1f;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-btn-announcement {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
     }
 
     .processing-overlay {
@@ -539,11 +542,9 @@
         </div>
       </div>
 
-      <!-- 🔒 固定高度的下方表單面板 -->
       <div class="fixed-bottom-panel">
         <div class="bottom-form-layout">
           
-          <!-- 左側：開關 ＋ 正方形確認預約按鈕 -->
           <div class="left-action-group">
             <div id="trialSwitchRow" class="trial-switch-row disabled">
               <label class="trial-switch-label" for="trialCheckbox">我要體驗</label>
@@ -558,7 +559,6 @@
             </button>
           </div>
 
-          <!-- 右側：日期(上方) ＋ 姓名 ＋ 電話 -->
           <div class="input-fields-group">
             <select id="trialDateSelect" class="form-control-compact select-trial-date">
             </select>
@@ -592,18 +592,29 @@
     <div class="processing-subtext">請勿關閉視窗，系統正在為您登記</div>
   </div>
 
+  <!-- 📢 公告專用 Modal 視窗 -->
+  <div id="announcementModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-icon">📢</div>
+      <div class="modal-title announcement">重要公告</div>
+      <div id="announcementBody" class="modal-body"></div>
+      <button type="button" class="modal-btn modal-btn-announcement" onclick="closeAnnouncementModal()">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 預約結果 Modal 視窗 -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
       <div id="modalIcon" class="modal-icon">🎉</div>
       <div id="modalTitle" class="modal-title success">報名成功</div>
-      <div id="modalBody" class="modal-body">內容加載中...</div>
+      <div id="modalBody" class="modal-body" style="text-align: center;">內容加載中...</div>
       <button type="button" class="modal-btn" onclick="closeCustomModal()">確定</button>
     </div>
   </div>
 
   <script>
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwAGMYBWFdA0aZFw7RYOKqBjnDBifbhW-dUGJKyMl8viqIn7ddtdg6G6IakdObaNp2REw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxEa_p8vVKyVJHManOtHIYjfs_KzhCJahLTlBUpiHQSocVn6UOasqpWERVDjqYXA1zgRw/exec";
 
     let lineProfile = { userId: "", displayName: "" };
     let globalCoursesData = []; 
@@ -715,10 +726,17 @@
         const response = await fetch(GAS_URL);
         const data = await response.json();
 
-        if (data.status === "success" && data.courses.length > 0) {
-          globalCoursesData = data.courses;
-          renderCourses(globalCoursesData, false);
-          localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
+        if (data.status === "success") {
+          // 📢 檢查是否有公告事項
+          if (data.announcement && data.announcement.trim() !== "") {
+            showAnnouncementModal(data.announcement);
+          }
+
+          if (data.courses && data.courses.length > 0) {
+            globalCoursesData = data.courses;
+            renderCourses(globalCoursesData, false);
+            localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
+          }
         } else {
           if (!localStorage.getItem("wenwu_courses_cache")) {
             container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
@@ -732,7 +750,17 @@
       }
     }
 
-    // 🌟 更新「我要體驗」開關與選單狀態
+    function showAnnouncementModal(text) {
+      const modal = document.getElementById("announcementModal");
+      const bodyEl = document.getElementById("announcementBody");
+      bodyEl.textContent = text;
+      modal.classList.add("active");
+    }
+
+    function closeAnnouncementModal() {
+      document.getElementById("announcementModal").classList.remove("active");
+    }
+
     function updateFormState() {
       const selectedRadio = document.querySelector('input[name="courseSelection"]:checked');
       const trialSwitchRow = document.getElementById("trialSwitchRow");
@@ -744,10 +772,8 @@
       const courseObj = globalCoursesData.find(c => c.courseName === selectedCourseName);
 
       if (courseObj && courseObj.trialStatus === "開放") {
-        // 開放體驗：解除反白
         trialSwitchRow.classList.remove("disabled");
         
-        // 生成對應的未來 3 週日期
         const trialDateSelect = document.getElementById("trialDateSelect");
         const dates = generateNextThreeDates(courseObj.timeInfo);
         trialDateSelect.innerHTML = "";
@@ -759,14 +785,12 @@
         });
 
       } else {
-        // 關閉體驗：反白、取消勾選、隱藏下拉選單
         trialSwitchRow.classList.add("disabled");
         trialCheckbox.checked = false;
         toggleTrialDateSelect();
       }
     }
 
-    // 🌟 控制體驗日期下拉選單之顯示/隱藏 (維持版面不跳動)
     function toggleTrialDateSelect() {
       const trialCheckbox = document.getElementById("trialCheckbox");
       const trialDateSelect = document.getElementById("trialDateSelect");
@@ -830,7 +854,6 @@
       return `${month}/${date} (${dayName})`;
     }
 
-    // 🌟 表單統一送出
     document.getElementById("bookingForm").addEventListener("submit", async function(e) {
       e.preventDefault();
 
