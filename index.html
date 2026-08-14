@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>文舞集 目前課程</title>
   
-  <!-- 引入 LINE LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     :root {
       --animated-gradient: linear-gradient(90deg, #ff007f, #7928ca, #00d2ff, #ff007f);
+      --trial-gradient: linear-gradient(90deg, #f59e0b, #d97706);
       --primary-pink: #ff007f;
       --border-color: #e2e2e8;
       --text-main: #1d1d1f;
       --text-sub: #6e6e73;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       height: 100%;
@@ -32,7 +30,6 @@
       overflow: hidden;
     }
 
-    /* 滿版 App 容器 */
     .app-container {
       display: flex;
       flex-direction: column;
@@ -43,7 +40,6 @@
       position: relative;
     }
 
-    /* --- 1. 頂部固定區 --- */
     .fixed-top-panel {
       background: #ffffff;
       padding: 20px 18px 12px 18px;
@@ -89,7 +85,6 @@
       text-align: center;
     }
 
-    /* --- 2. 中間純滑動卡片區 --- */
     .scrollable-content {
       flex: 1;
       overflow-y: auto;
@@ -112,18 +107,9 @@
     }
 
     @keyframes springSlideUp {
-      0% {
-        opacity: 0;
-        transform: translateY(30px) scale(0.92);
-      }
-      60% {
-        opacity: 1;
-        transform: translateY(-6px) scale(1.02);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+      0% { opacity: 0; transform: translateY(30px) scale(0.92); }
+      60% { opacity: 1; transform: translateY(-6px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .card-item-wrapper {
@@ -145,9 +131,7 @@
       z-index: 1;
     }
 
-    .course-card:active {
-      transform: scale(0.70) !important;
-    }
+    .course-card:active { transform: scale(0.96) !important; }
 
     @keyframes rotateNeon {
       0% { transform: translate(-50%, -50%) rotate(0deg); }
@@ -186,6 +170,21 @@
     .course-radio-input:checked + .course-card::before {
       opacity: 1;
       animation: rotateNeon 3s linear infinite;
+    }
+
+    /* 🌟 開放體驗小標籤 */
+    .trial-badge {
+      position: absolute;
+      top: 14px;
+      right: 48px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+      z-index: 2;
     }
 
     .card-check-icon {
@@ -233,7 +232,7 @@
       font-size: 1.15rem;
       font-weight: 900;
       color: var(--text-main);
-      padding-right: 28px;
+      padding-right: 80px;
       line-height: 1.35;
     }
 
@@ -258,11 +257,10 @@
       font-size: 0.95rem;
     }
 
-    /* --- 3. 下方固定表單區 --- */
     .fixed-bottom-panel {
       background: #ffffff;
       border-top: 1px solid rgba(0, 0, 0, 0.08);
-      padding: 16px 18px 20px 18px;
+      padding: 14px 18px 18px 18px;
       box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08);
       z-index: 10;
       flex-shrink: 0;
@@ -274,33 +272,61 @@
       align-items: stretch;
     }
 
-    .submit-btn-square {
+    /* 上下雙按鈕區塊 */
+    .button-group-vertical {
       width: 105px;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .trial-btn-square {
+      flex: 1;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .trial-btn-square:active:not(:disabled) { transform: scale(0.94); }
+
+    .trial-btn-square:disabled {
+      background: #e0e0e0;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #a0a0a0;
+    }
+
+    .submit-btn-square {
+      flex: 1.2;
       background: var(--animated-gradient);
       background-size: 200% 200%;
       animation: titleGradientFlow 3s ease infinite;
       color: white;
       border: none;
-      border-radius: 16px;
-      font-size: 0.98rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 6px 18px rgba(255, 0, 127, 0.35);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: all 0.2s ease;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      line-height: 1.35;
-      padding: 8px;
       text-align: center;
     }
 
-    .submit-btn-square:active:not(:disabled) {
-      transform: scale(0.94);
-      box-shadow: 0 2px 8px rgba(255, 0, 127, 0.2);
-    }
+    .submit-btn-square:active:not(:disabled) { transform: scale(0.94); }
 
     .submit-btn-square:disabled {
       background: #e0e0e0;
@@ -314,15 +340,16 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      justify-content: center;
     }
 
     .form-control-compact {
       width: 100%;
-      padding: 12px 14px;
+      padding: 10px 12px;
       border: 2px solid var(--border-color);
-      border-radius: 12px;
-      font-size: 0.92rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
       background-color: #fafafa;
       transition: all 0.25s ease;
       outline: none;
@@ -334,13 +361,18 @@
       box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
     }
 
-    /* --- 4. 強化版超大字體結果彈窗 --- */
+    /* 體驗日期下拉選單樣式 */
+    .select-trial-date {
+      border-color: #f59e0b !important;
+      background-color: #fffbe1 !important;
+      color: #b45309 !important;
+      font-weight: 700;
+    }
+
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(4px);
       display: flex;
@@ -353,10 +385,7 @@
       padding: 20px;
     }
 
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
 
     .modal-box {
       background: #ffffff;
@@ -370,23 +399,10 @@
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .modal-overlay.active .modal-box {
-      transform: scale(1);
-    }
+    .modal-overlay.active .modal-box { transform: scale(1); }
 
-    .modal-icon {
-      font-size: 3.5rem;
-      margin-bottom: 8px;
-      line-height: 1;
-    }
-
-    .modal-title {
-      font-size: 1.85rem;
-      font-weight: 900;
-      margin-bottom: 12px;
-      line-height: 1.25;
-    }
-
+    .modal-icon { font-size: 3.5rem; margin-bottom: 8px; line-height: 1; }
+    .modal-title { font-size: 1.85rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
     .modal-title.success { color: #10b981; }
     .modal-title.error { color: #ef4444; }
 
@@ -411,13 +427,10 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    /* --- 5. ✨ 新增：全螢幕「預約處理中」動態遮罩 --- */
     .processing-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(8px);
       display: flex;
@@ -430,14 +443,10 @@
       transition: all 0.3s ease;
     }
 
-    .processing-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .processing-overlay.active { opacity: 1; visibility: visible; }
 
     .spinner {
-      width: 56px;
-      height: 56px;
+      width: 56px; height: 56px;
       border: 5px solid rgba(255, 255, 255, 0.2);
       border-top: 5px solid #ff007f;
       border-radius: 50%;
@@ -474,7 +483,6 @@
 
   <div class="app-container">
     
-    <!-- 頂部固定區 -->
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
       <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
@@ -483,22 +491,30 @@
 
     <form id="bookingForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
       
-      <!-- 中間可滾動區 -->
       <div class="scrollable-content">
         <div id="courseCardList" class="course-card-list">
           <div class="loading-text">✨ 課程載入中，請稍候...</div>
         </div>
       </div>
 
-      <!-- 下方固定表單區 -->
       <div class="fixed-bottom-panel">
         <div class="bottom-form-layout">
           
-          <button type="submit" class="submit-btn-square" id="submitBtn" disabled>
-            確認<br>預約
-          </button>
+          <div class="button-group-vertical">
+            <button type="button" class="trial-btn-square" id="trialBtn" disabled onclick="submitBooking(true)">
+              體驗<br>課程
+            </button>
+            <button type="button" class="submit-btn-square" id="submitBtn" disabled onclick="submitBooking(false)">
+              確認<br>預約
+            </button>
+          </div>
 
           <div class="input-fields-group">
+            <!-- 🌟 動態顯示：體驗日期選單 -->
+            <select id="trialDateSelect" class="form-control-compact select-trial-date" style="display: none;">
+              <!-- JS 動態生成未來 3 週日期 -->
+            </select>
+
             <input 
               type="text" 
               id="name" 
@@ -522,14 +538,12 @@
     </form>
   </div>
 
-  <!-- ✨ 新增：全螢幕預約處理中遮罩 -->
   <div id="processingOverlay" class="processing-overlay">
     <div class="spinner"></div>
     <div class="processing-text">預約資料傳送中...</div>
     <div class="processing-subtext">請勿關閉視窗，系統正在為您登記</div>
   </div>
 
-  <!-- 客製超大字體結果彈窗 -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
       <div id="modalIcon" class="modal-icon">🎉</div>
@@ -541,26 +555,26 @@
 
   <script>
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbySqiVUQ_MKM3po9gwoNIC-cU2Jvee7pzMu2GP4tSv7jZTtLJceX6SrfHd1X35W-qIR8g/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyQxRcEAICKkvs9btG-R8huGJuPSmIRMpKiuL9uiSbbv_V2jd1FeY3dG8RgqF2zAFJMKw/exec";
 
     let lineProfile = { userId: "", displayName: "" };
+    let globalCoursesData = []; // 儲存課程陣列
 
     document.addEventListener("DOMContentLoaded", async () => {
-      // ⚡ 1. 秒開暫存：若手機有上次暫存，立即顯示，達到 0 秒載入體驗
       const cachedCourses = localStorage.getItem("wenwu_courses_cache");
       if (cachedCourses) {
         try {
-          renderCourses(JSON.parse(cachedCourses), true);
+          globalCoursesData = JSON.parse(cachedCourses);
+          renderCourses(globalCoursesData, true);
         } catch (e) {
           console.error("讀取快取失敗:", e);
         }
       }
 
       await initLIFF();
-      await fetchCourses(); // 背景撈最新資料並靜默更新
+      await fetchCourses();
     });
 
-    // 1. LIFF 初始化
     async function initLIFF() {
       const welcomeEl = document.getElementById("userWelcome");
       const submitBtn = document.getElementById("submitBtn");
@@ -579,7 +593,7 @@
 
         welcomeEl.innerText = `👋 你好，${lineProfile.displayName}`;
         submitBtn.disabled = false;
-        submitBtn.innerHTML = "確認<br>預約";
+        updateFormState(); // 根據選擇更新體驗按鈕與日期下拉選單
 
       } catch (err) {
         console.error("LIFF 初始化失敗:", err);
@@ -587,7 +601,6 @@
       }
     }
 
-    // 渲染課程卡片 (抽出為獨立 Function)
     function renderCourses(courses, isFromCache = false) {
       const container = document.getElementById("courseCardList");
       if (!courses || courses.length === 0) {
@@ -597,16 +610,17 @@
         return;
       }
 
-      // 記住當前學員已勾選的選項（避免背景更新時勾選被重置）
       const currentlyChecked = document.querySelector('input[name="courseSelection"]:checked')?.value;
-
       container.innerHTML = ""; 
 
       courses.forEach((course, index) => {
         const isChecked = (currentlyChecked ? currentlyChecked === course.courseName : index === 0) ? "checked" : ""; 
         const delay = isFromCache ? "0" : (index * 0.08).toFixed(2);
-
         const formattedCourseName = course.courseName.replace(/[\(（]/g, '<br>(');
+
+        const badgeHtml = course.trialStatus === "開放" 
+          ? `<div class="trial-badge">開放體驗！</div>` 
+          : "";
 
         const cardHtml = `
           <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
@@ -617,8 +631,10 @@
               value="${course.courseName}" 
               class="course-radio-input"
               ${isChecked}
+              onchange="updateFormState()"
             >
             <label for="course_${index}" class="course-card">
+              ${badgeHtml}
               <div class="card-check-icon"></div>
               
               <div class="course-header">
@@ -641,9 +657,10 @@
         `;
         container.insertAdjacentHTML("beforeend", cardHtml);
       });
+
+      updateFormState();
     }
 
-    // 2. 從 GAS 取得課程（撈完自動寫入暫存）
     async function fetchCourses() {
       const container = document.getElementById("courseCardList");
       try {
@@ -651,9 +668,8 @@
         const data = await response.json();
 
         if (data.status === "success" && data.courses.length > 0) {
-          // 渲染最新課程
-          renderCourses(data.courses, false);
-          // 同步存入手機內存
+          globalCoursesData = data.courses;
+          renderCourses(globalCoursesData, false);
           localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
         } else {
           if (!localStorage.getItem("wenwu_courses_cache")) {
@@ -668,9 +684,102 @@
       }
     }
 
-    // 3. 表單送出到 GAS
-    document.getElementById("bookingForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
+    // 🌟 更新體驗按鈕與未來 3 週日期下拉選單
+    function updateFormState() {
+      const selectedRadio = document.querySelector('input[name="courseSelection"]:checked');
+      const trialBtn = document.getElementById("trialBtn");
+      const trialDateSelect = document.getElementById("trialDateSelect");
+
+      if (!selectedRadio || globalCoursesData.length === 0) return;
+
+      const selectedCourseName = selectedRadio.value;
+      const courseObj = globalCoursesData.find(c => c.courseName === selectedCourseName);
+
+      if (courseObj && courseObj.trialStatus === "開放") {
+        // 開放體驗：啟用按鈕，生成日期
+        trialBtn.disabled = false;
+        
+        const dates = generateNextThreeDates(courseObj.timeInfo);
+        trialDateSelect.innerHTML = "";
+        dates.forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d;
+          opt.textContent = `🗓️ 選擇體驗日：${d}`;
+          trialDateSelect.appendChild(opt);
+        });
+        
+        trialDateSelect.style.display = "block";
+      } else {
+        // 關閉體驗：反白按鈕，隱藏下拉選單
+        trialBtn.disabled = true;
+        trialDateSelect.style.display = "none";
+      }
+    }
+
+    // 🌟 輔助函式：計算未來 3 個對應星期幾的日期
+    function generateNextThreeDates(timeStr) {
+      const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
+                       "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
+                       "週三": 3, "周三": 3, "星期三": 3, "禮拜三": 3,
+                       "週四": 4, "周四": 4, "星期四": 4, "禮拜四": 4,
+                       "週五": 5, "周五": 5, "星期五": 5, "禮拜五": 5,
+                       "週六": 6, "周六": 6, "星期六": 6, "禮拜六": 6,
+                       "週日": 0, "周日": 0, "星期日": 0, "禮拜日": 0, "星期天": 0, "禮拜天": 0 };
+
+      let targetDay = -1;
+      for (let key in dayMap) {
+        if (timeStr.includes(key)) {
+          targetDay = dayMap[key];
+          break;
+        }
+      }
+
+      const results = [];
+      let today = new Date();
+      
+      if (targetDay === -1) {
+        // 若無法辨識星期幾，預設算未來 3 個 7 天
+        for (let i = 1; i <= 3; i++) {
+          let nextD = new Date();
+          nextD.setDate(today.getDate() + (i * 7));
+          results.push(formatDateMD(nextD));
+        }
+        return results;
+      }
+
+      let count = 0;
+      let current = new Date();
+      current.setDate(current.getDate() + 1); // 從明天開始算
+
+      while (count < 3) {
+        if (current.getDay() === targetDay) {
+          results.push(formatDateMD(current));
+          count++;
+        }
+        current.setDate(current.getDate() + 1);
+      }
+
+      return results;
+    }
+
+    function formatDateMD(dateObj) {
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const date = String(dateObj.getDate()).padStart(2, '0');
+      const dayNames = ["日", "一", "二", "三", "四", "五", "六"];
+      const dayName = dayNames[dateObj.getDay()];
+      return `${month}/${date} (${dayName})`;
+    }
+
+    // 🌟 表單送出處置 (區分體驗或正式)
+    async function submitBooking(isTrial = false) {
+      const nameInput = document.getElementById("name");
+      const phoneInput = document.getElementById("phone");
+
+      if (!nameInput.checkValidity() || !phoneInput.checkValidity()) {
+        nameInput.reportValidity();
+        phoneInput.reportValidity();
+        return;
+      }
 
       if (!lineProfile.userId) {
         showCustomModal({
@@ -680,7 +789,7 @@
         });
         return;
       }
-      
+
       const selectedCourse = document.querySelector('input[name="courseSelection"]:checked');
       if (!selectedCourse) {
         showCustomModal({
@@ -691,14 +800,16 @@
         return;
       }
 
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
+      const name = nameInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const trialDate = isTrial ? document.getElementById("trialDateSelect").value : "正式報名";
+
       const submitBtn = document.getElementById("submitBtn");
+      const trialBtn = document.getElementById("trialBtn");
       const processingOverlay = document.getElementById("processingOverlay");
 
-      // 🔒 鎖定按鈕 + 開啟全螢幕動態遮罩
       submitBtn.disabled = true;
-      submitBtn.innerText = "處理中";
+      trialBtn.disabled = true;
       processingOverlay.classList.add("active");
 
       const payload = {
@@ -706,7 +817,9 @@
         displayName: lineProfile.displayName,
         name: name,
         phone: phone,
-        item: selectedCourse.value
+        item: selectedCourse.value,
+        isTrial: isTrial,
+        trialDate: trialDate
       };
 
       try {
@@ -717,22 +830,18 @@
         });
 
         const result = await res.json();
-        
-        // 關閉全螢幕遮罩
         processingOverlay.classList.remove("active");
 
         if (result.status === "success") {
+          const bodyMsg = isTrial 
+            ? `預約學員：<b>${name}</b><br>體驗課程：${result.courseName}<br>體驗日期：<b style="color:#d97706;">${result.trialDate}</b>`
+            : `預約學員：<b>${name}</b><br>報名課程：${result.courseName}<br>狀態：${result.bookingStatus}`;
+
           showCustomModal({
             isSuccess: true,
-            title: "報名成功！",
-            body: `預約學員：<b>${name}</b><br>報名課程：${result.courseName}<br>狀態：${result.bookingStatus}`,
+            title: isTrial ? "🎉 體驗預約成功！" : "🎉 報名成功！",
+            body: bodyMsg,
             autoCloseLiff: true
-          });
-        } else if (result.status === "duplicate") {
-          showCustomModal({
-            isSuccess: false,
-            title: "報名失敗",
-            body: result.message
           });
         } else {
           showCustomModal({
@@ -750,11 +859,10 @@
         });
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = "確認<br>預約";
+        updateFormState();
       }
-    });
+    }
 
-    // 4. 超大字體彈窗控制邏輯
     let shouldCloseLiff = false;
 
     function showCustomModal({ isSuccess, title, body, autoCloseLiff = false }) {
