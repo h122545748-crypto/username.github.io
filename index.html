@@ -236,31 +236,34 @@
       gap: 6px;
       font-size: 0.88rem;
       color: var(--text-sub);
+      padding-right: 60px;
     }
 
-    .course-info-item {
+    /* 📸 右下角師資頭像與動畫 */
+    .teacher-avatar-btn {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #ff007f;
+      background-color: #f3f4f6;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+      z-index: 3;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      font-size: 1.2rem;
     }
 
-    /* 🔍 查看簡介按鈕 */
-    .teacher-btn {
-      background: #f3f4f6;
-      color: #2563eb;
-      border: 1px solid #dbeafe;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-left: 6px;
-      transition: all 0.2s ease;
-    }
-
-    .teacher-btn:active {
-      transform: scale(0.92);
-      background: #dbeafe;
+    .teacher-avatar-btn:hover, .teacher-avatar-btn:active {
+      transform: scale(1.15) rotate(5deg);
+      box-shadow: 0 6px 16px rgba(255, 0, 127, 0.4);
     }
 
     .loading-text {
@@ -428,8 +431,8 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -443,13 +446,14 @@
     .modal-overlay.active { opacity: 1; visibility: visible; }
 
     .modal-box {
+      position: relative;
       background: #ffffff;
       width: 100%;
       max-width: 360px;
       border-radius: 24px;
       padding: 24px 20px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
       transform: scale(0.8);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       max-height: 85vh;
@@ -458,17 +462,42 @@
 
     .modal-overlay.active .modal-box { transform: scale(1); }
 
+    /* ✖️ 右上角關閉按鈕 */
+    .modal-close-x {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .modal-close-x:active {
+      transform: scale(0.9);
+      background: rgba(0, 0, 0, 0.15);
+    }
+
     .modal-icon { font-size: 3.5rem; margin-bottom: 8px; line-height: 1; }
-    .modal-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
+    .modal-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
     .modal-title.success { color: #10b981; }
     .modal-title.error { color: #ef4444; }
     .modal-title.announcement { color: #3b82f6; }
-    .modal-title.teacher { color: #7928ca; }
+    .modal-title.teacher { color: #7928ca; text-align: left; }
 
     .modal-body {
-      font-size: 0.98rem;
+      font-size: 0.95rem;
       color: #4b5563;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       line-height: 1.5;
       font-weight: 500;
       text-align: left;
@@ -476,14 +505,24 @@
       white-space: pre-wrap;
     }
 
-    /* 📸 師資相片樣式 */
-    .teacher-photo {
+    /* 📸 師資彈窗大圖樣式 */
+    .teacher-photo-large {
       width: 100%;
-      max-height: 220px;
+      max-height: 240px;
       object-fit: cover;
       border-radius: 16px;
       margin-bottom: 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .teacher-section-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #7928ca;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .modal-btn {
@@ -627,6 +666,7 @@
   <!-- 📢 重要公告 Modal -->
   <div id="announcementModal" class="modal-overlay">
     <div class="modal-box">
+      <div class="modal-close-x" onclick="closeAnnouncementModal()">✕</div>
       <div class="modal-icon">📢</div>
       <div class="modal-title announcement">重要公告</div>
       <div id="announcementBody" class="modal-body"></div>
@@ -637,6 +677,7 @@
   <!-- 👤 師資簡介 Modal -->
   <div id="teacherModal" class="modal-overlay">
     <div class="modal-box">
+      <div class="modal-close-x" onclick="closeTeacherModal()">✕</div>
       <div id="teacherPhotoContainer"></div>
       <div id="teacherModalTitle" class="modal-title teacher">師資介紹</div>
       <div id="teacherModalBody" class="modal-body"></div>
@@ -647,6 +688,7 @@
   <!-- 🎉 預約結果 Modal -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
+      <div class="modal-close-x" onclick="closeCustomModal()">✕</div>
       <div id="modalIcon" class="modal-icon">🎉</div>
       <div id="modalTitle" class="modal-title success">報名成功</div>
       <div id="modalBody" class="modal-body" style="text-align: center;">內容加載中...</div>
@@ -723,6 +765,12 @@
           ? `<div class="trial-badge">開放體驗！</div>` 
           : "";
 
+        // 右下角圓形頭像
+        const avatarStyle = course.teacherPhoto 
+          ? `style="background-image: url('${course.teacherPhoto}');"` 
+          : "";
+        const avatarIcon = course.teacherPhoto ? "" : "👤";
+
         const cardHtml = `
           <div class="card-item-wrapper" style="animation-delay: ${delay}s;">
             <input 
@@ -743,13 +791,12 @@
               </div>
 
               <div class="course-info-group">
-                <div class="course-info-item">
-                  <span>👤 授課老師：${course.teacher}</span>
-                  <button type="button" class="teacher-btn" onclick="openTeacherModal(${index}, event)">🔍 查看簡介</button>
-                </div>
-                <div class="course-info-item">
-                  <span>⏰ 上課時間：${course.timeInfo}</span>
-                </div>
+                <div>👤 授課老師：<b>${course.teacher}</b></div>
+                <div>⏰ 上課時間：<b>${course.timeInfo}</b></div>
+              </div>
+
+              <div class="teacher-avatar-btn" ${avatarStyle} onclick="openTeacherModal(${index}, event)" title="點擊查看 ${course.teacher} 老師簡介">
+                ${avatarIcon}
               </div>
             </label>
           </div>
@@ -789,7 +836,7 @@
       }
     }
 
-    /* 👤 展開師資 Modal 視窗 */
+    /* 👤 展開師資 Profile Modal 視窗 */
     function openTeacherModal(index, event) {
       if (event) event.stopPropagation(); 
 
@@ -801,10 +848,22 @@
       const photoContainer = document.getElementById("teacherPhotoContainer");
 
       titleEl.innerText = `👤 ${course.teacher} 老師`;
-      bodyEl.textContent = course.teacherBio || "暫無詳細介紹。";
+
+      let contentHtml = "";
+      if (course.teacherStyle) {
+        contentHtml += `<div class="teacher-section-title">🎨 專長風格</div><div>${course.teacherStyle}</div>`;
+      }
+      if (course.teacherExp) {
+        contentHtml += `<div class="teacher-section-title" style="margin-top:12px;">📜 經歷 / 簡歷</div><div>${course.teacherExp}</div>`;
+      }
+      if (!course.teacherStyle && !course.teacherExp) {
+        contentHtml = "暫無詳細介紹。";
+      }
+
+      bodyEl.innerHTML = contentHtml;
 
       if (course.teacherPhoto && course.teacherPhoto.trim() !== "") {
-        photoContainer.innerHTML = `<img src="${course.teacherPhoto}" class="teacher-photo" alt="${course.teacher}">`;
+        photoContainer.innerHTML = `<img src="${course.teacherPhoto}" class="teacher-photo-large" alt="${course.teacher}">`;
       } else {
         photoContainer.innerHTML = "";
       }
