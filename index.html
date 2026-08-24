@@ -244,6 +244,25 @@
       gap: 6px;
     }
 
+    /* 🔍 查看簡介按鈕 */
+    .teacher-btn {
+      background: #f3f4f6;
+      color: #2563eb;
+      border: 1px solid #dbeafe;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-left: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .teacher-btn:active {
+      transform: scale(0.92);
+      background: #dbeafe;
+    }
+
     .loading-text {
       text-align: center;
       color: var(--text-sub);
@@ -404,7 +423,7 @@
       visibility: visible;
     }
 
-    /* 彈窗遮罩基礎樣式 */
+    /* Modal 視窗遮罩 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -428,38 +447,51 @@
       width: 100%;
       max-width: 360px;
       border-radius: 24px;
-      padding: 28px 22px;
+      padding: 24px 20px;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
       transform: scale(0.8);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-height: 85vh;
+      overflow-y: auto;
     }
 
     .modal-overlay.active .modal-box { transform: scale(1); }
 
     .modal-icon { font-size: 3.5rem; margin-bottom: 8px; line-height: 1; }
-    .modal-title { font-size: 1.85rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
+    .modal-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
     .modal-title.success { color: #10b981; }
     .modal-title.error { color: #ef4444; }
     .modal-title.announcement { color: #3b82f6; }
+    .modal-title.teacher { color: #7928ca; }
 
     .modal-body {
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       color: #4b5563;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.5;
-      font-weight: 600;
+      font-weight: 500;
       text-align: left;
       word-break: break-all;
       white-space: pre-wrap;
     }
 
+    /* 📸 師資相片樣式 */
+    .teacher-photo {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
     .modal-btn {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       border: none;
       border-radius: 14px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: white;
       background: #1d1d1f;
@@ -592,7 +624,7 @@
     <div class="processing-subtext">請勿關閉視窗，系統正在為您登記</div>
   </div>
 
-  <!-- 📢 公告專用 Modal 視窗 -->
+  <!-- 📢 重要公告 Modal -->
   <div id="announcementModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-icon">📢</div>
@@ -602,7 +634,17 @@
     </div>
   </div>
 
-  <!-- 預約結果 Modal 視窗 -->
+  <!-- 👤 師資簡介 Modal -->
+  <div id="teacherModal" class="modal-overlay">
+    <div class="modal-box">
+      <div id="teacherPhotoContainer"></div>
+      <div id="teacherModalTitle" class="modal-title teacher">師資介紹</div>
+      <div id="teacherModalBody" class="modal-body"></div>
+      <button type="button" class="modal-btn" onclick="closeTeacherModal()">關閉</button>
+    </div>
+  </div>
+
+  <!-- 🎉 預約結果 Modal -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
       <div id="modalIcon" class="modal-icon">🎉</div>
@@ -703,6 +745,7 @@
               <div class="course-info-group">
                 <div class="course-info-item">
                   <span>👤 授課老師：${course.teacher}</span>
+                  <button type="button" class="teacher-btn" onclick="openTeacherModal(${index}, event)">🔍 查看簡介</button>
                 </div>
                 <div class="course-info-item">
                   <span>⏰ 上課時間：${course.timeInfo}</span>
@@ -744,6 +787,33 @@
           container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
         }
       }
+    }
+
+    /* 👤 展開師資 Modal 視窗 */
+    function openTeacherModal(index, event) {
+      if (event) event.stopPropagation(); 
+
+      const course = globalCoursesData[index];
+      if (!course) return;
+
+      const titleEl = document.getElementById("teacherModalTitle");
+      const bodyEl = document.getElementById("teacherModalBody");
+      const photoContainer = document.getElementById("teacherPhotoContainer");
+
+      titleEl.innerText = `👤 ${course.teacher} 老師`;
+      bodyEl.textContent = course.teacherBio || "暫無詳細介紹。";
+
+      if (course.teacherPhoto && course.teacherPhoto.trim() !== "") {
+        photoContainer.innerHTML = `<img src="${course.teacherPhoto}" class="teacher-photo" alt="${course.teacher}">`;
+      } else {
+        photoContainer.innerHTML = "";
+      }
+
+      document.getElementById("teacherModal").classList.add("active");
+    }
+
+    function closeTeacherModal() {
+      document.getElementById("teacherModal").classList.remove("active");
     }
 
     function showAnnouncementModal(text) {
