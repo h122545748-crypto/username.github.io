@@ -451,7 +451,7 @@
       font-weight: 600;
       text-align: left;
       word-break: break-all;
-      white-space: pre-wrap; /* 保持斷行文字 */
+      white-space: pre-wrap;
     }
 
     .modal-btn {
@@ -707,9 +707,6 @@
                 <div class="course-info-item">
                   <span>⏰ 上課時間：${course.timeInfo}</span>
                 </div>
-                <div class="course-info-item">
-                  <span>👥 報名上限：${course.maxCapacity} 人</span>
-                </div>
               </div>
             </label>
           </div>
@@ -727,7 +724,6 @@
         const data = await response.json();
 
         if (data.status === "success") {
-          // 📢 檢查是否有公告事項
           if (data.announcement && data.announcement.trim() !== "") {
             showAnnouncementModal(data.announcement);
           }
