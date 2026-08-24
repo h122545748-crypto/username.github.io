@@ -239,6 +239,7 @@
       padding-right: 60px;
     }
 
+    /* 📸 右下角圓形頭像與互動動畫 */
     .teacher-avatar-btn {
       position: absolute;
       right: 14px;
@@ -418,13 +419,14 @@
       background-color: #fffbe1 !important;
       color: #b45309 !important;
       font-weight: 800;
-      display: none;
+      visibility: hidden;
     }
 
     .select-trial-date.active {
-      display: block;
+      visibility: visible;
     }
 
+    /* Modal 視窗遮罩 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -460,6 +462,7 @@
 
     .modal-overlay.active .modal-box { transform: scale(1); }
 
+    /* ✖️ 右上角關閉按鈕 */
     .modal-close-x {
       position: absolute;
       top: 12px;
@@ -502,6 +505,7 @@
       white-space: pre-wrap;
     }
 
+    /* 📸 師資彈窗大圖樣式 */
     .teacher-photo-large {
       width: 100%;
       max-height: 240px;
@@ -594,6 +598,7 @@
 <body>
 
   <div class="app-container">
+    
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
       <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
@@ -601,6 +606,7 @@
     </div>
 
     <form id="bookingForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+      
       <div class="scrollable-content">
         <div id="courseCardList" class="course-card-list">
           <div class="loading-text">✨ 課程載入中，請稍候...</div>
@@ -609,6 +615,7 @@
 
       <div class="fixed-bottom-panel">
         <div class="bottom-form-layout">
+          
           <div class="left-action-group">
             <div id="trialSwitchRow" class="trial-switch-row disabled">
               <label class="trial-switch-label" for="trialCheckbox">我要體驗</label>
@@ -624,7 +631,8 @@
           </div>
 
           <div class="input-fields-group">
-            <select id="trialDateSelect" class="form-control-compact select-trial-date"></select>
+            <select id="trialDateSelect" class="form-control-compact select-trial-date">
+            </select>
 
             <input 
               type="text" 
@@ -642,8 +650,10 @@
               required
             >
           </div>
+
         </div>
       </div>
+
     </form>
   </div>
 
@@ -653,6 +663,7 @@
     <div class="processing-subtext">請勿關閉視窗，系統正在為您登記</div>
   </div>
 
+  <!-- 📢 重要公告 Modal -->
   <div id="announcementModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeAnnouncementModal()">✕</div>
@@ -663,6 +674,7 @@
     </div>
   </div>
 
+  <!-- 👤 師資簡介 Modal -->
   <div id="teacherModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeTeacherModal()">✕</div>
@@ -673,6 +685,7 @@
     </div>
   </div>
 
+  <!-- 🎉 預約結果 Modal -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeCustomModal()">✕</div>
@@ -685,7 +698,7 @@
 
   <script>
     const MY_LIFF_ID = "2010788391-bIBpQ7sB"; 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbym19Rcbl6G7kydQJ9fy-5n_XxxAYbT2ZjKeErS4wvZJ_hjGIlV8ttEvHvjxrjvOgplWQ/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw8uswbJ_oJ-cUDH43a5GpsvfpEqTriWxiFsO-iwh6MhoQc8nArVUjHt-u6MQWFdq7HbQ/exec";
 
     let lineProfile = { userId: "", displayName: "" };
     let globalCoursesData = []; 
@@ -752,6 +765,7 @@
           ? `<div class="trial-badge">開放體驗！</div>` 
           : "";
 
+        // 右下角圓形頭像
         const avatarStyle = course.teacherPhoto 
           ? `style="background-image: url('${course.teacherPhoto}');"` 
           : "";
@@ -822,6 +836,7 @@
       }
     }
 
+    /* 👤 展開師資 Profile Modal 視窗 */
     function openTeacherModal(index, event) {
       if (event) event.stopPropagation(); 
 
@@ -913,15 +928,13 @@
     }
 
     function generateNextThreeDates(timeStr) {
-      const dayMap = {
-        "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
-        "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
-        "週三": 3, "周三": 3, "星期三": 3, "禮拜三": 3,
-        "週四": 4, "周四": 4, "星期四": 4, "禮拜四": 4,
-        "週五": 5, "周五": 5, "星期五": 5, "禮拜五": 5,
-        "週六": 6, "周六": 6, "星期六": 6, "禮拜六": 6,
-        "週日": 0, "周日": 0, "星期日": 0, "禮拜日": 0, "星期天": 0, "禮拜天": 0
-      };
+      const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
+                       "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
+                       "週三": 3, "周三": 3, "星期三": 3, "禮拜三": 3,
+                       "週四": 4, "周四": 4, "星期四": 4, "禮拜四": 4,
+                       "週五": 5, "周五": 5, "星期五": 5, "禮拜五": 5,
+                       "週六": 6, "周六": 6, "星期六": 6, "禮拜六": 6,
+                       "週日": 0, "周日": 0, "星期日": 0, "禮拜日": 0, "星期天": 0, "禮拜天": 0 };
 
       let targetDay = -1;
       for (let key in dayMap) {
