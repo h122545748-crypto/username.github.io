@@ -169,10 +169,11 @@
       animation: rotateNeon 3s linear infinite;
     }
 
+    /* 🏷️ 開放體驗標籤：z-index 提高至 4，確保在頭像 (z-index: 3) 上方 */
     .trial-badge {
       position: absolute;
       top: 14px;
-      right: 48px;
+      right: 14px;
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #fff;
       font-size: 0.75rem;
@@ -180,40 +181,7 @@
       padding: 3px 8px;
       border-radius: 20px;
       box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
-      z-index: 2;
-    }
-
-    .card-check-icon {
-      position: absolute;
-      top: 16px; right: 16px;
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      border: 3px solid #ccc;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: #fff;
-      transition: all 0.3s ease;
-      z-index: 2;
-    }
-
-    @keyframes popSpin {
-      0% { transform: scale(0.2) rotate(-180deg); }
-      70% { transform: scale(1.3) rotate(15deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-
-    .course-radio-input:checked + .course-card .card-check-icon {
-      background: linear-gradient(135deg, #ff007f, #7928ca);
-      border-color: transparent;
-      animation: popSpin 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-
-    .course-radio-input:checked + .course-card .card-check-icon::after {
-      content: "✓";
-      font-weight: 900;
+      z-index: 4;
     }
 
     .course-header {
@@ -239,13 +207,13 @@
       padding-right: 60px;
     }
 
-    /* 📸 右下角圓形頭像與互動動畫 */
+    /* 📸 右下角圓形頭像 (z-index: 3) */
     .teacher-avatar-btn {
       position: absolute;
       right: 14px;
       bottom: 14px;
-      width: 72px;
-      height: 72px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       border: 2px solid #ff007f;
       background-color: #f3f4f6;
@@ -462,7 +430,6 @@
 
     .modal-overlay.active .modal-box { transform: scale(1); }
 
-    /* ✖️ 右上角關閉按鈕 */
     .modal-close-x {
       position: absolute;
       top: 12px;
@@ -505,7 +472,6 @@
       white-space: pre-wrap;
     }
 
-    /* 📸 師資彈窗大圖樣式 */
     .teacher-photo-large {
       width: 100%;
       max-height: 240px;
@@ -784,7 +750,6 @@
             >
             <label for="course_${index}" class="course-card">
               ${badgeHtml}
-              <div class="card-check-icon"></div>
               
               <div class="course-header">
                 <span class="course-name">${formattedCourseName}</span>
@@ -836,7 +801,6 @@
       }
     }
 
-    /* 👤 展開師資 Profile Modal 視窗 */
     function openTeacherModal(index, event) {
       if (event) event.stopPropagation(); 
 
