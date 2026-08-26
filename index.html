@@ -439,7 +439,7 @@
       visibility: visible;
     }
 
-    /* Modal 視窗遮罩與通用彈窗設計 (已簡化抬頭空間) */
+    /* Modal 視窗遮罩與通用彈窗設計 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -499,7 +499,6 @@
       background: rgba(0, 0, 0, 0.15);
     }
 
-    /* 極簡化抬頭設計 */
     .modal-title {
       font-size: 1.15rem;
       font-weight: 900;
@@ -539,10 +538,10 @@
 
     .modal-btn:active { transform: scale(0.98); }
 
-    /* 📅 週課表自適應水平滑動表格 */
+    /* 📅 週課表自適應水平滑動表格 (已優化行距緊湊度) */
     .schedule-table-wrapper {
       width: 100%;
-      overflow-x: auto; /* 允許橫向滑動 */
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       margin-top: 4px;
       border-radius: 8px;
@@ -553,11 +552,11 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      min-width: 520px; /* 固定最小寬度，防止手機畫面上表格硬擠變形 */
+      min-width: 520px;
     }
 
     .schedule-table th {
-      padding: 6px 2px;
+      padding: 5px 2px;
       background-color: #6b21a8;
       color: #ffffff;
       font-size: 11px;
@@ -566,11 +565,11 @@
     }
 
     .schedule-table td {
-      padding: 6px 2px;
+      padding: 4px 2px;
       vertical-align: top;
       background-color: #ffffff;
       border: 1px solid #e5e7eb;
-      line-height: 1.25;
+      line-height: 1.15;
       word-break: break-all;
     }
 
@@ -581,8 +580,9 @@
       font-size: 10px;
     }
 
-    .sch-c-title { font-weight: bold; color: #111827; font-size: 11px; margin-bottom: 2px; }
-    .sch-c-teacher { color: #2563eb; font-size: 10px; }
+    /* 緊湊微調：縮小下邊距與字級間距 */
+    .sch-c-title { font-weight: bold; color: #111827; font-size: 11px; margin-bottom: 1px; }
+    .sch-c-teacher { color: #2563eb; font-size: 10px; margin-bottom: 1px; }
     .sch-c-time { color: #ec4899; font-size: 10px; font-weight: 500; }
 
     /* 🗓️ 停課時間清單樣式 */
@@ -956,7 +956,7 @@
       }
     }
 
-    /* 📅 自動擷取生成「週課表」內容 */
+    /* 📅 自動擷取生成「週課表」內容 (已套用緊湊行距) */
     function openScheduleModal() {
       const bodyEl = document.getElementById("scheduleModalBody");
       
@@ -1159,10 +1159,25 @@
         const trialDateSelect = document.getElementById("trialDateSelect");
         const dateOptions = generateNextThreeDates(courseObj.timeInfo);
         trialDateSelect.innerHTML = "";
+
+        let firstAvailableSet = false;
+
         dateOptions.forEach(optData => {
           const opt = document.createElement("option");
           opt.value = optData.formatted;
-          opt.textContent = `體驗日：${optData.formatted}${optData.isDelayed ? ' (因停課順延)' : ''}`;
+          
+          if (optData.isHoliday) {
+            opt.textContent = `體驗日：${optData.formatted} (停課，不可選擇)`;
+            opt.disabled = true;
+            opt.style.color = "#a0a0a0";
+            opt.style.backgroundColor = "#f3f3f3";
+          } else {
+            opt.textContent = `體驗日：${optData.formatted}`;
+            if (!firstAvailableSet) {
+              opt.selected = true; // 預設自動選取第一個「正常開課」的日期
+              firstAvailableSet = true;
+            }
+          }
           trialDateSelect.appendChild(opt);
         });
 
@@ -1185,7 +1200,7 @@
       }
     }
 
-    /* 生成體驗日期：自動避開停課日並順延 (附提示) */
+    /* 生成體驗日期：若遇到停課日呈現灰白不可選，並自動往後多遞補開課日 */
     function generateNextThreeDates(timeStr) {
       const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
                        "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
@@ -1207,13 +1222,12 @@
       const holidayDates = (globalHolidaysData || []).map(h => h.rawDateStr || h.formattedDate);
 
       const results = [];
-      let count = 0;
+      let validCount = 0;
       let current = new Date();
       current.setDate(current.getDate() + 1);
 
-      let isDelayedFlag = false;
-
-      while (count < 3) {
+      // 目標是抓滿 3 個「可選擇」的正常開課日
+      while (validCount < 3) {
         if (targetDay === -1 || current.getDay() === targetDay) {
           const formatted = formatDateMD(current);
           const shortDate = formatted.split(' ')[0]; // 取得 MM/DD
@@ -1221,15 +1235,13 @@
           // 檢查是否與停課日衝突
           const isHoliday = holidayDates.some(h => h && h.includes(shortDate));
 
-          if (isHoliday) {
-            isDelayedFlag = true; // 遇到停課，不計數，跳過並自動順延至下一週
-          } else {
-            results.push({
-              formatted: formatted,
-              isDelayed: isDelayedFlag
-            });
-            isDelayedFlag = false;
-            count++;
+          results.push({
+            formatted: formatted,
+            isHoliday: isHoliday
+          });
+
+          if (!isHoliday) {
+            validCount++;
           }
         }
         current.setDate(current.getDate() + 1);
