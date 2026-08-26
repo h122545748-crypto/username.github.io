@@ -538,7 +538,7 @@
 
     .modal-btn:active { transform: scale(0.98); }
 
-    /* 📅 週課表自適應水平滑動表格 (已優化行距緊湊度) */
+    /* 📅 週課表自適應水平滑動表格 (已高度優化行距與壓低間距) */
     .schedule-table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -566,10 +566,10 @@
 
     .schedule-table td {
       padding: 4px 2px;
-      vertical-align: middle;
+      vertical-align: top;
       background-color: #ffffff;
       border: 1px solid #e5e7eb;
-      line-height: 1.15;
+      line-height: 1.05;
       word-break: break-all;
     }
 
@@ -578,12 +578,13 @@
       background-color: #f9fafb;
       color: #9ca3af;
       font-size: 10px;
+      vertical-align: middle;
     }
 
-    /* 緊湊微調：縮小下邊距與字級間距 */
-    .sch-c-title { font-weight: bold; color: #111827; font-size: 11px; margin-bottom: 1px; }
-    .sch-c-teacher { color: #2563eb; font-size: 10px; margin-bottom: 1px; }
-    .sch-c-time { color: #ec4899; font-size: 10px; font-weight: 500; }
+    /* 極緊湊微調：移除下邊距、將文字距離貼合 */
+    .sch-c-title { font-weight: bold; color: #111827; font-size: 11px; margin: 0; padding: 0; }
+    .sch-c-teacher { color: #2563eb; font-size: 10px; margin: 0; padding: 0; }
+    .sch-c-time { color: #ec4899; font-size: 10px; font-weight: 500; margin: 0; padding: 0; }
 
     /* 🗓️ 停課時間清單樣式 */
     .holiday-list-group {
@@ -956,7 +957,7 @@
       }
     }
 
-    /* 📅 自動擷取生成「週課表」內容 (已套用緊湊行距) */
+    /* 📅 自動擷取生成「週課表」內容 (完全壓低行距與隱藏換行) */
     function openScheduleModal() {
       const bodyEl = document.getElementById("scheduleModalBody");
       
@@ -1009,13 +1010,7 @@
           daysOfWeek.forEach(day => {
             const item = scheduleByDay[day][rowIndex];
             if (item) {
-              rowCellsHtml += `
-                <td>
-                  <div class="sch-c-title">${item.cName}</div>
-                  <div class="sch-c-teacher">${item.teacher}</div>
-                  <div class="sch-c-time">${item.timeInfo}</div>
-                </td>
-              `;
+              rowCellsHtml += `<td><div class="sch-c-title">${item.cName}</div><div class="sch-c-teacher">${item.teacher}</div><div class="sch-c-time">${item.timeInfo}</div></td>`;
             } else {
               rowCellsHtml += `<td class="empty-td">-</td>`;
             }
@@ -1024,18 +1019,7 @@
         }
       }
 
-      bodyEl.innerHTML = `
-        <div class="schedule-table-wrapper">
-          <table class="schedule-table">
-            <thead>
-              <tr>${tableHeaderHtml}</tr>
-            </thead>
-            <tbody>
-              ${tableBodyRowsHtml}
-            </tbody>
-          </table>
-        </div>
-      `;
+      bodyEl.innerHTML = `<div class="schedule-table-wrapper"><table class="schedule-table"><thead><tr>${tableHeaderHtml}</tr></thead><tbody>${tableBodyRowsHtml}</tbody></table></div>`;
 
       document.getElementById("scheduleModal").classList.add("active");
     }
@@ -1174,7 +1158,7 @@
           } else {
             opt.textContent = `體驗日：${optData.formatted}`;
             if (!firstAvailableSet) {
-              opt.selected = true; // 預設自動選取第一個「正常開課」的日期
+              opt.selected = true;
               firstAvailableSet = true;
             }
           }
@@ -1200,7 +1184,6 @@
       }
     }
 
-    /* 生成體驗日期：若遇到停課日呈現灰白不可選，並自動往後多遞補開課日 */
     function generateNextThreeDates(timeStr) {
       const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
                        "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
@@ -1218,7 +1201,6 @@
         }
       }
 
-      // 整理目前停課清單 (取 MM/DD 比對)
       const holidayDates = (globalHolidaysData || []).map(h => h.rawDateStr || h.formattedDate);
 
       const results = [];
@@ -1226,13 +1208,11 @@
       let current = new Date();
       current.setDate(current.getDate() + 1);
 
-      // 目標是抓滿 3 個「可選擇」的正常開課日
       while (validCount < 3) {
         if (targetDay === -1 || current.getDay() === targetDay) {
           const formatted = formatDateMD(current);
-          const shortDate = formatted.split(' ')[0]; // 取得 MM/DD
+          const shortDate = formatted.split(' ')[0];
 
-          // 檢查是否與停課日衝突
           const isHoliday = holidayDates.some(h => h && h.includes(shortDate));
 
           results.push({
