@@ -41,7 +41,7 @@
 
     .fixed-top-panel {
       background: #ffffff;
-      padding: 20px 18px 12px 18px;
+      padding: 16px 18px 12px 18px;
       border-bottom: 1px solid rgba(0, 0, 0, 0.06);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
       z-index: 10;
@@ -71,17 +71,42 @@
       text-align: center;
       color: var(--text-sub);
       font-size: 0.88rem;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px dashed #e5e5ea;
     }
 
-    .section-title {
-      font-weight: 800;
-      font-size: 0.95rem;
-      display: block;
-      color: var(--text-main);
+    /* 🟡 黃色小方塊按鈕組 */
+    .top-action-bar {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .yellow-btn-box {
+      flex: 1;
+      background: linear-gradient(135deg, #fbcfe8, #fef08a);
+      background-color: #facc15;
+      color: #854d0e;
+      border: 2px solid #eab308;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 0.92rem;
+      font-weight: 900;
       text-align: center;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(234, 179, 8, 0.25);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .yellow-btn-box:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 4px rgba(234, 179, 8, 0.2);
     }
 
     .scrollable-content {
@@ -116,7 +141,6 @@
       animation: springSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
-    /* 1. 卡片主體 */
     .course-card {
       position: relative;
       background-color: #ffffff;
@@ -131,7 +155,6 @@
       z-index: 1;
     }
 
-    /* 2. 底層旋轉霓虹燈 */
     .course-card::before {
       content: "";
       position: absolute;
@@ -144,7 +167,6 @@
       z-index: -2;
     }
 
-    /* 3. 內層白色遮罩 */
     .course-card::after {
       content: "";
       position: absolute;
@@ -154,7 +176,6 @@
       z-index: -1;
     }
 
-    /* 4. 選取時的效果 */
     .course-radio-input:checked + .course-card {
       border-color: transparent;
       transform: translateY(-4px) scale(1.01);
@@ -166,7 +187,6 @@
       animation: rotateNeon 3s linear infinite;
     }
 
-    /* 🏷️ 開放體驗標籤 */
     .trial-badge {
       position: absolute;
       top: 10px;
@@ -204,7 +224,6 @@
       padding-right: 60px;
     }
 
-    /* 📸 右下角圓形頭像 */
     .teacher-avatar-btn {
       position: absolute;
       right: 15px;
@@ -266,35 +285,16 @@
       align-items: center;
     }
 
-    /* ✨ 「我要體驗」按鈕列與動畫效果 */
     @keyframes redGlowPulse {
-      0% {
-        border-color: #ff0055;
-        box-shadow: 0 0 4px rgba(255, 0, 85, 0.4);
-      }
-      50% {
-        border-color: #ff007f;
-        box-shadow: 0 0 12px rgba(255, 0, 127, 0.85);
-      }
-      100% {
-        border-color: #ff0055;
-        box-shadow: 0 0 4px rgba(255, 0, 85, 0.4);
-      }
+      0% { border-color: #ff0055; box-shadow: 0 0 4px rgba(255, 0, 85, 0.4); }
+      50% { border-color: #ff007f; box-shadow: 0 0 12px rgba(255, 0, 127, 0.85); }
+      100% { border-color: #ff0055; box-shadow: 0 0 4px rgba(255, 0, 85, 0.4); }
     }
 
     @keyframes pulse-glow {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 0, 127, 0.7);
-      }
-      70% {
-        transform: scale(1.15);
-        box-shadow: 0 0 0 6px rgba(255, 0, 127, 0);
-      }
-      100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 0, 127, 0);
-      }
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 127, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(255, 0, 127, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 127, 0); }
     }
 
     .trial-switch-row {
@@ -310,7 +310,6 @@
       border: 2px solid transparent;
     }
 
-    /* 亮起紅線與發光效果 (當開放體驗且非 disabled 時) */
     .trial-switch-row.active-glow {
       background: #fff0f5;
       animation: redGlowPulse 1.8s infinite ease-in-out;
@@ -352,7 +351,6 @@
       border-radius: 50%;
     }
 
-    /* 亮起狀態時的小圓球閃爍動畫提示 */
     .trial-switch-row.active-glow .slider:before {
       background-color: #ff007f;
       animation: pulse-glow 1.4s infinite ease-in-out;
@@ -441,7 +439,7 @@
       visibility: visible;
     }
 
-    /* Modal 視窗遮罩 */
+    /* Modal 視窗遮罩與通用彈窗設計 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -464,7 +462,7 @@
       position: relative;
       background: #ffffff;
       width: 100%;
-      max-width: 360px;
+      max-width: 420px;
       border-radius: 24px;
       padding: 24px 20px;
       text-align: center;
@@ -501,15 +499,17 @@
       background: rgba(0, 0, 0, 0.15);
     }
 
-    .modal-icon { font-size: 3.5rem; margin-bottom: 8px; line-height: 1; }
-    .modal-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
+    .modal-icon { font-size: 3rem; margin-bottom: 6px; line-height: 1; }
+    .modal-title { font-size: 1.4rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
     .modal-title.success { color: #10b981; }
     .modal-title.error { color: #ef4444; }
     .modal-title.announcement { color: #3b82f6; }
     .modal-title.teacher { color: #7928ca; text-align: left; }
+    .modal-title.schedule { color: #6b21a8; }
+    .modal-title.holiday { color: #d97706; }
 
     .modal-body {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: #4b5563;
       margin-bottom: 18px;
       line-height: 1.5;
@@ -517,6 +517,96 @@
       text-align: left;
       word-break: break-all;
       white-space: pre-wrap;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: white;
+      background: #1d1d1f;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-btn:active { transform: scale(0.98); }
+
+    /* 📅 週課表自適應表格樣式 */
+    .schedule-table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      min-width: 320px;
+    }
+
+    .schedule-table th {
+      padding: 8px 2px;
+      background-color: #6b21a8;
+      color: #ffffff;
+      font-size: 11px;
+      text-align: center;
+      border: 1px solid #d1d5db;
+    }
+
+    .schedule-table td {
+      padding: 6px 2px;
+      vertical-align: top;
+      background-color: #ffffff;
+      border: 1px solid #e5e7eb;
+      line-height: 1.25;
+      word-break: break-all;
+    }
+
+    .schedule-table td.empty-td {
+      text-align: center;
+      background-color: #f9fafb;
+      color: #9ca3af;
+      font-size: 10px;
+    }
+
+    .sch-c-title { font-weight: bold; color: #111827; font-size: 11px; margin-bottom: 2px; }
+    .sch-c-teacher { color: #2563eb; font-size: 10px; }
+    .sch-c-time { color: #ec4899; font-size: 10px; font-weight: 500; }
+
+    /* 🗓️ 停課時間清單樣式 */
+    .holiday-list-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .holiday-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fffbe1;
+      border: 1.5px solid #fde047;
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .holiday-date {
+      font-weight: 900;
+      color: #b45309;
+      font-size: 1rem;
+    }
+
+    .holiday-reason {
+      font-weight: 700;
+      color: #4b5563;
+      font-size: 0.9rem;
     }
 
     .teacher-photo-large {
@@ -536,24 +626,6 @@
       margin-bottom: 4px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-    }
-
-    .modal-btn {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 14px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: white;
-      background: #1d1d1f;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .modal-btn-announcement {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
     }
 
     .processing-overlay {
@@ -615,7 +687,16 @@
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
       <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
-      <span class="section-title">選擇欲預約的舞蹈課程：</span>
+      
+      <!-- 🟡 黃色小方塊選項 -->
+      <div class="top-action-bar">
+        <div class="yellow-btn-box" onclick="openScheduleModal()">
+          📅 週課表
+        </div>
+        <div class="yellow-btn-box" onclick="openHolidayModal()">
+          🏖️ 停課日期
+        </div>
+      </div>
     </div>
 
     <form id="bookingForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
@@ -683,7 +764,29 @@
       <div class="modal-icon">📢</div>
       <div class="modal-title announcement">重要公告</div>
       <div id="announcementBody" class="modal-body"></div>
-      <button type="button" class="modal-btn modal-btn-announcement" onclick="closeAnnouncementModal()">我知道了</button>
+      <button type="button" class="modal-btn" style="background:#3b82f6;" onclick="closeAnnouncementModal()">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 📅 週課表 Modal -->
+  <div id="scheduleModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-close-x" onclick="closeScheduleModal()">✕</div>
+      <div class="modal-icon">📅</div>
+      <div class="modal-title schedule">本週課程總表</div>
+      <div id="scheduleModalBody" class="modal-body"></div>
+      <button type="button" class="modal-btn" onclick="closeScheduleModal()">關閉視窗</button>
+    </div>
+  </div>
+
+  <!-- 🏖️ 停課日期 Modal -->
+  <div id="holidayModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-close-x" onclick="closeHolidayModal()">✕</div>
+      <div class="modal-icon">🏖️</div>
+      <div class="modal-title holiday">停課公告</div>
+      <div id="holidayModalBody" class="modal-body"></div>
+      <button type="button" class="modal-btn" onclick="closeHolidayModal()">關閉視窗</button>
     </div>
   </div>
 
@@ -694,7 +797,7 @@
       <div id="teacherPhotoContainer"></div>
       <div id="teacherModalTitle" class="modal-title teacher">師資介紹</div>
       <div id="teacherModalBody" class="modal-body"></div>
-      <button type="button" class="modal-btn" onclick="closeTeacherModal()">關閉</button>
+      <button type="button" class="modal-btn" onclick="closeTeacherModal()">關閉視窗</button>
     </div>
   </div>
 
@@ -715,6 +818,7 @@
 
     let lineProfile = { userId: "", displayName: "" };
     let globalCoursesData = []; 
+    let globalHolidaysData = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
       const cachedCourses = localStorage.getItem("wenwu_courses_cache");
@@ -834,6 +938,10 @@
             renderCourses(globalCoursesData, false);
             localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
           }
+
+          if (data.holidays) {
+            globalHolidaysData = data.holidays;
+          }
         } else {
           if (!localStorage.getItem("wenwu_courses_cache")) {
             container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
@@ -845,6 +953,143 @@
           container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
         }
       }
+    }
+
+    /* 📅 自動擷取生成「週課表」內容 */
+    function openScheduleModal() {
+      const bodyEl = document.getElementById("scheduleModalBody");
+      
+      if (!globalCoursesData || globalCoursesData.length === 0) {
+        bodyEl.innerHTML = "<div style='text-align:center; color:#6b7280;'>目前尚無課程資料。</div>";
+        document.getElementById("scheduleModal").classList.add("active");
+        return;
+      }
+
+      const daysOfWeek = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"];
+      const scheduleByDay = {
+        "週一": [], "週二": [], "週三": [], "週四": [],
+        "週五": [], "週六": [], "週日": []
+      };
+
+      globalCoursesData.forEach(c => {
+        const dayKey = getDayKey(c.timeInfo);
+        if (dayKey) {
+          const timeOnly = c.timeInfo.replace(/(週|周|星期|禮拜)[一二三四五六日天]\s*/g, "").trim();
+          scheduleByDay[dayKey].push({
+            cName: c.courseName,
+            teacher: c.teacher,
+            timeInfo: timeOnly,
+            minutes: parseStartTimeMinutes(c.timeInfo)
+          });
+        }
+      });
+
+      let maxRowsCount = 0;
+      daysOfWeek.forEach(day => {
+        scheduleByDay[day].sort((a, b) => a.minutes - b.minutes);
+        if (scheduleByDay[day].length > maxRowsCount) {
+          maxRowsCount = scheduleByDay[day].length;
+        }
+      });
+
+      let tableHeaderHtml = "";
+      daysOfWeek.forEach(day => {
+        tableHeaderHtml += `<th>${day}</th>`;
+      });
+
+      let tableBodyRowsHtml = "";
+      if (maxRowsCount === 0) {
+        let emptyCells = "";
+        daysOfWeek.forEach(() => emptyCells += `<td class="empty-td">-</td>`);
+        tableBodyRowsHtml = `<tr>${emptyCells}</tr>`;
+      } else {
+        for (let rowIndex = 0; rowIndex < maxRowsCount; rowIndex++) {
+          let rowCellsHtml = "";
+          daysOfWeek.forEach(day => {
+            const item = scheduleByDay[day][rowIndex];
+            if (item) {
+              rowCellsHtml += `
+                <td>
+                  <div class="sch-c-title">${item.cName}</div>
+                  <div class="sch-c-teacher">👤 ${item.teacher}</div>
+                  <div class="sch-c-time">⏰ ${item.timeInfo}</div>
+                </td>
+              `;
+            } else {
+              rowCellsHtml += `<td class="empty-td">-</td>`;
+            }
+          });
+          tableBodyRowsHtml += `<tr>${rowCellsHtml}</tr>`;
+        }
+      }
+
+      bodyEl.innerHTML = `
+        <div class="schedule-table-wrapper">
+          <table class="schedule-table">
+            <thead>
+              <tr>${tableHeaderHtml}</tr>
+            </thead>
+            <tbody>
+              ${tableBodyRowsHtml}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      document.getElementById("scheduleModal").classList.add("active");
+    }
+
+    function closeScheduleModal() {
+      document.getElementById("scheduleModal").classList.remove("active");
+    }
+
+    /* 🏖️ 自動擷取「停課時間」內容 */
+    function openHolidayModal() {
+      const bodyEl = document.getElementById("holidayModalBody");
+
+      if (!globalHolidaysData || globalHolidaysData.length === 0) {
+        bodyEl.innerHTML = "<div style='text-align:center; color:#6b7280; padding:15px 0;'>🎉 目前暫無預定的停課日期！</div>";
+      } else {
+        let itemsHtml = "";
+        globalHolidaysData.forEach(item => {
+          itemsHtml += `
+            <div class="holiday-item">
+              <div class="holiday-date">📅 ${item.formattedDate}</div>
+              <div class="holiday-reason">${item.reason}</div>
+            </div>
+          `;
+        });
+
+        bodyEl.innerHTML = `<div class="holiday-list-group">${itemsHtml}</div>`;
+      }
+
+      document.getElementById("holidayModal").classList.add("active");
+    }
+
+    function closeHolidayModal() {
+      document.getElementById("holidayModal").classList.remove("active");
+    }
+
+    function getDayKey(timeStr) {
+      if (!timeStr) return null;
+      const str = timeStr.toString();
+      if (/週一|周一|星期一|禮拜一/.test(str)) return "週一";
+      if (/週二|周二|星期二|禮拜二/.test(str)) return "週二";
+      if (/週三|周三|星期三|禮拜三/.test(str)) return "週三";
+      if (/週四|周四|星期四|禮拜四/.test(str)) return "週四";
+      if (/週五|周五|星期五|禮拜五/.test(str)) return "週五";
+      if (/週六|周六|星期六|禮拜六/.test(str)) return "週六";
+      if (/週日|周日|星期日|禮拜日|星期天|禮拜天/.test(str)) return "週日";
+      return null;
+    }
+
+    function parseStartTimeMinutes(timeStr) {
+      if (!timeStr) return 9999;
+      const match = timeStr.toString().match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+      }
+      return 9999;
     }
 
     function openTeacherModal(index, event) {
@@ -908,7 +1153,7 @@
 
       if (courseObj && courseObj.trialStatus === "開放") {
         trialSwitchRow.classList.remove("disabled");
-        trialSwitchRow.classList.add("active-glow"); // 開放體驗時啟動紅框與動畫
+        trialSwitchRow.classList.add("active-glow"); 
         
         const trialDateSelect = document.getElementById("trialDateSelect");
         const dates = generateNextThreeDates(courseObj.timeInfo);
