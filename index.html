@@ -439,7 +439,7 @@
       visibility: visible;
     }
 
-    /* Modal 視窗遮罩與通用彈窗設計 */
+    /* Modal 視窗遮罩與通用彈窗設計 (已簡化抬頭空間) */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -453,7 +453,7 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
-      padding: 20px;
+      padding: 16px;
     }
 
     .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -463,8 +463,8 @@
       background: #ffffff;
       width: 100%;
       max-width: 420px;
-      border-radius: 24px;
-      padding: 24px 20px;
+      border-radius: 20px;
+      padding: 16px 14px 14px 14px;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
       transform: scale(0.8);
@@ -477,16 +477,16 @@
 
     .modal-close-x {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 32px;
-      height: 32px;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
       background: rgba(0, 0, 0, 0.06);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: bold;
       color: #6b7280;
       cursor: pointer;
@@ -499,8 +499,13 @@
       background: rgba(0, 0, 0, 0.15);
     }
 
-    .modal-icon { font-size: 3rem; margin-bottom: 6px; line-height: 1; }
-    .modal-title { font-size: 1.4rem; font-weight: 900; margin-bottom: 12px; line-height: 1.25; }
+    /* 極簡化抬頭設計 */
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
     .modal-title.success { color: #10b981; }
     .modal-title.error { color: #ef4444; }
     .modal-title.announcement { color: #3b82f6; }
@@ -509,10 +514,10 @@
     .modal-title.holiday { color: #d97706; }
 
     .modal-body {
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       color: #4b5563;
-      margin-bottom: 18px;
-      line-height: 1.5;
+      margin-bottom: 12px;
+      line-height: 1.45;
       font-weight: 500;
       text-align: left;
       word-break: break-all;
@@ -521,10 +526,10 @@
 
     .modal-btn {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: none;
-      border-radius: 14px;
-      font-size: 1.05rem;
+      border-radius: 12px;
+      font-size: 1rem;
       font-weight: 800;
       color: white;
       background: #1d1d1f;
@@ -534,12 +539,12 @@
 
     .modal-btn:active { transform: scale(0.98); }
 
-    /* 📅 週課表自適應表格樣式 */
+    /* 📅 週課表自適應水平滑動表格 */
     .schedule-table-wrapper {
       width: 100%;
-      overflow-x: auto;
+      overflow-x: auto; /* 允許橫向滑動 */
       -webkit-overflow-scrolling: touch;
-      margin-top: 8px;
+      margin-top: 4px;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
     }
@@ -548,11 +553,11 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      min-width: 320px;
+      min-width: 520px; /* 固定最小寬度，防止手機畫面上表格硬擠變形 */
     }
 
     .schedule-table th {
-      padding: 8px 2px;
+      padding: 6px 2px;
       background-color: #6b21a8;
       color: #ffffff;
       font-size: 11px;
@@ -584,7 +589,7 @@
     .holiday-list-group {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .holiday-item {
@@ -593,37 +598,37 @@
       align-items: center;
       background: #fffbe1;
       border: 1.5px solid #fde047;
-      padding: 10px 14px;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 10px;
     }
 
     .holiday-date {
       font-weight: 900;
       color: #b45309;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
 
     .holiday-reason {
       font-weight: 700;
       color: #4b5563;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .teacher-photo-large {
       width: 100%;
-      max-height: 240px;
+      max-height: 200px;
       object-fit: cover;
-      border-radius: 16px;
-      margin-bottom: 14px;
+      border-radius: 12px;
+      margin-bottom: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
     .teacher-section-title {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 800;
       color: #7928ca;
-      margin-top: 8px;
-      margin-bottom: 4px;
+      margin-top: 6px;
+      margin-bottom: 2px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -691,10 +696,10 @@
       <!-- 🟡 黃色小方塊選項 -->
       <div class="top-action-bar">
         <div class="yellow-btn-box" onclick="openScheduleModal()">
-          📅 週課表
+          週課表
         </div>
         <div class="yellow-btn-box" onclick="openHolidayModal()">
-          🏖️ 停課日期
+          停課日期
         </div>
       </div>
     </div>
@@ -761,8 +766,7 @@
   <div id="announcementModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeAnnouncementModal()">✕</div>
-      <div class="modal-icon">📢</div>
-      <div class="modal-title announcement">重要公告</div>
+      <div class="modal-title announcement">公告</div>
       <div id="announcementBody" class="modal-body"></div>
       <button type="button" class="modal-btn" style="background:#3b82f6;" onclick="closeAnnouncementModal()">我知道了</button>
     </div>
@@ -772,8 +776,7 @@
   <div id="scheduleModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeScheduleModal()">✕</div>
-      <div class="modal-icon">📅</div>
-      <div class="modal-title schedule">本週課程總表</div>
+      <div class="modal-title schedule">週課表</div>
       <div id="scheduleModalBody" class="modal-body"></div>
       <button type="button" class="modal-btn" onclick="closeScheduleModal()">關閉視窗</button>
     </div>
@@ -783,8 +786,7 @@
   <div id="holidayModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeHolidayModal()">✕</div>
-      <div class="modal-icon">🏖️</div>
-      <div class="modal-title holiday">停課公告</div>
+      <div class="modal-title holiday">停課日期</div>
       <div id="holidayModalBody" class="modal-body"></div>
       <button type="button" class="modal-btn" onclick="closeHolidayModal()">關閉視窗</button>
     </div>
@@ -805,8 +807,7 @@
   <div id="customModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeCustomModal()">✕</div>
-      <div id="modalIcon" class="modal-icon">🎉</div>
-      <div id="modalTitle" class="modal-title success">報名成功</div>
+      <div id="modalTitle" class="modal-title success">報名結果</div>
       <div id="modalBody" class="modal-body" style="text-align: center;">內容加載中...</div>
       <button type="button" class="modal-btn" onclick="closeCustomModal()">確定</button>
     </div>
@@ -929,6 +930,10 @@
         const data = await response.json();
 
         if (data.status === "success") {
+          if (data.holidays) {
+            globalHolidaysData = data.holidays;
+          }
+
           if (data.announcement && data.announcement.trim() !== "") {
             showAnnouncementModal(data.announcement);
           }
@@ -937,10 +942,6 @@
             globalCoursesData = data.courses;
             renderCourses(globalCoursesData, false);
             localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
-          }
-
-          if (data.holidays) {
-            globalHolidaysData = data.holidays;
           }
         } else {
           if (!localStorage.getItem("wenwu_courses_cache")) {
@@ -1048,13 +1049,13 @@
       const bodyEl = document.getElementById("holidayModalBody");
 
       if (!globalHolidaysData || globalHolidaysData.length === 0) {
-        bodyEl.innerHTML = "<div style='text-align:center; color:#6b7280; padding:15px 0;'>🎉 目前暫無預定的停課日期！</div>";
+        bodyEl.innerHTML = "<div style='text-align:center; color:#6b7280; padding:15px 0;'>目前暫無預定的停課日期！</div>";
       } else {
         let itemsHtml = "";
         globalHolidaysData.forEach(item => {
           itemsHtml += `
             <div class="holiday-item">
-              <div class="holiday-date">📅 ${item.formattedDate}</div>
+              <div class="holiday-date">${item.formattedDate}</div>
               <div class="holiday-reason">${item.reason}</div>
             </div>
           `;
@@ -1102,14 +1103,14 @@
       const bodyEl = document.getElementById("teacherModalBody");
       const photoContainer = document.getElementById("teacherPhotoContainer");
 
-      titleEl.innerText = `👤 ${course.teacher} 老師`;
+      titleEl.innerText = `${course.teacher} 老師`;
 
       let contentHtml = "";
       if (course.teacherStyle) {
-        contentHtml += `<div class="teacher-section-title">🎨 專長風格</div><div>${course.teacherStyle}</div>`;
+        contentHtml += `<div class="teacher-section-title">專長風格</div><div>${course.teacherStyle}</div>`;
       }
       if (course.teacherExp) {
-        contentHtml += `<div class="teacher-section-title" style="margin-top:15px;"></div><div>${course.teacherExp}</div>`;
+        contentHtml += `<div class="teacher-section-title" style="margin-top:10px;">經歷簡介</div><div>${course.teacherExp}</div>`;
       }
       if (!course.teacherStyle && !course.teacherExp) {
         contentHtml = "暫無詳細介紹。";
@@ -1156,12 +1157,12 @@
         trialSwitchRow.classList.add("active-glow"); 
         
         const trialDateSelect = document.getElementById("trialDateSelect");
-        const dates = generateNextThreeDates(courseObj.timeInfo);
+        const dateOptions = generateNextThreeDates(courseObj.timeInfo);
         trialDateSelect.innerHTML = "";
-        dates.forEach(d => {
+        dateOptions.forEach(optData => {
           const opt = document.createElement("option");
-          opt.value = d;
-          opt.textContent = `🗓️ 體驗日：${d}`;
+          opt.value = optData.formatted;
+          opt.textContent = `體驗日：${optData.formatted}${optData.isDelayed ? ' (因停課順延)' : ''}`;
           trialDateSelect.appendChild(opt);
         });
 
@@ -1184,6 +1185,7 @@
       }
     }
 
+    /* 生成體驗日期：自動避開停課日並順延 (附提示) */
     function generateNextThreeDates(timeStr) {
       const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
                        "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
@@ -1201,26 +1203,34 @@
         }
       }
 
+      // 整理目前停課清單 (取 MM/DD 比對)
+      const holidayDates = (globalHolidaysData || []).map(h => h.rawDateStr || h.formattedDate);
+
       const results = [];
-      let today = new Date();
-
-      if (targetDay === -1) {
-        for (let i = 1; i <= 3; i++) {
-          let nextD = new Date();
-          nextD.setDate(today.getDate() + (i * 7));
-          results.push(formatDateMD(nextD));
-        }
-        return results;
-      }
-
       let count = 0;
       let current = new Date();
       current.setDate(current.getDate() + 1);
 
+      let isDelayedFlag = false;
+
       while (count < 3) {
-        if (current.getDay() === targetDay) {
-          results.push(formatDateMD(current));
-          count++;
+        if (targetDay === -1 || current.getDay() === targetDay) {
+          const formatted = formatDateMD(current);
+          const shortDate = formatted.split(' ')[0]; // 取得 MM/DD
+
+          // 檢查是否與停課日衝突
+          const isHoliday = holidayDates.some(h => h && h.includes(shortDate));
+
+          if (isHoliday) {
+            isDelayedFlag = true; // 遇到停課，不計數，跳過並自動順延至下一週
+          } else {
+            results.push({
+              formatted: formatted,
+              isDelayed: isDelayedFlag
+            });
+            isDelayedFlag = false;
+            count++;
+          }
         }
         current.setDate(current.getDate() + 1);
       }
@@ -1297,7 +1307,7 @@
 
           showCustomModal({
             isSuccess: true,
-            title: isTrial ? "🎉 體驗預約成功！" : "🎉 報名成功！",
+            title: isTrial ? "體驗預約成功" : "報名成功",
             body: bodyMsg,
             autoCloseLiff: true
           });
@@ -1324,17 +1334,14 @@
 
     function showCustomModal({ isSuccess, title, body, autoCloseLiff = false }) {
       const modal = document.getElementById("customModal");
-      const iconEl = document.getElementById("modalIcon");
       const titleEl = document.getElementById("modalTitle");
       const bodyEl = document.getElementById("modalBody");
 
       shouldCloseLiff = autoCloseLiff;
 
       if (isSuccess) {
-        iconEl.innerText = "🎉";
         titleEl.className = "modal-title success";
       } else {
-        iconEl.innerText = "⚠️";
         titleEl.className = "modal-title error";
       }
 
