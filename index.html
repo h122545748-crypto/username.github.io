@@ -538,7 +538,7 @@
 
     .modal-btn:active { transform: scale(0.98); }
 
-    /* 📅 週課表自適應水平滑動表格 (已高度優化行距與壓低間距) */
+    /* 📅 週課表自適應水平滑動表格 */
     .schedule-table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -581,7 +581,6 @@
       vertical-align: middle;
     }
 
-    /* 極緊湊微調：移除下邊距、將文字距離貼合 */
     .sch-c-title { font-weight: bold; color: #111827; font-size: 11px; margin: 0; padding: 0; }
     .sch-c-teacher { color: #2563eb; font-size: 10px; margin: 0; padding: 0; }
     .sch-c-time { color: #ec4899; font-size: 10px; font-weight: 500; margin: 0; padding: 0; }
@@ -957,7 +956,7 @@
       }
     }
 
-    /* 📅 自動擷取生成「週課表」內容 (完全壓低行距與隱藏換行) */
+    /* 📅 自動擷取生成「週課表」內容 */
     function openScheduleModal() {
       const bodyEl = document.getElementById("scheduleModalBody");
       
@@ -1028,24 +1027,37 @@
       document.getElementById("scheduleModal").classList.remove("active");
     }
 
-    /* 🏖️ 自動擷取「停課時間」內容 */
+    /* 🏖️ 自動擷取「停課時間」內容 (前端防護：過濾過去日期 + 截取前 10 筆) */
     function openHolidayModal() {
       const bodyEl = document.getElementById("holidayModalBody");
 
       if (!globalHolidaysData || globalHolidaysData.length === 0) {
         bodyEl.innerHTML = "<div style='text-align:center; color:#6b7280; padding:15px 0;'>目前暫無預定的停課日期！</div>";
       } else {
-        let itemsHtml = "";
-        globalHolidaysData.forEach(item => {
-          itemsHtml += `
-            <div class="holiday-item">
-              <div class="holiday-date">${item.formattedDate}</div>
-              <div class="holiday-reason">${item.reason}</div>
-            </div>
-          `;
-        });
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
 
-        bodyEl.innerHTML = `<div class="holiday-list-group">${itemsHtml}</div>`;
+        // 過濾掉昨天的日期（僅保留今日及未來日期），並限制最多 10 筆
+        const validHolidays = globalHolidaysData.filter(item => {
+          if (!item.timestamp || item.timestamp === 0) return true;
+          return item.timestamp >= todayStart.getTime();
+        }).slice(0, 10);
+
+        if (validHolidays.length === 0) {
+          bodyEl.innerHTML = "<div style='text-align:center; color:#6b7280; padding:15px 0;'>目前暫無預定的停課日期！</div>";
+        } else {
+          let itemsHtml = "";
+          validHolidays.forEach(item => {
+            itemsHtml += `
+              <div class="holiday-item">
+                <div class="holiday-date">${item.formattedDate}</div>
+                <div class="holiday-reason">${item.reason}</div>
+              </div>
+            `;
+          });
+
+          bodyEl.innerHTML = `<div class="holiday-list-group">${itemsHtml}</div>`;
+        }
       }
 
       document.getElementById("holidayModal").classList.add("active");
