@@ -439,7 +439,7 @@
       visibility: visible;
     }
 
-    /* Modal 視窗遮罩與通用彈窗設計 */
+    /* Modal 視窗遮罩與通用彈窗設計 (已簡化抬頭空間) */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -499,6 +499,7 @@
       background: rgba(0, 0, 0, 0.15);
     }
 
+    /* 極簡化抬頭設計 */
     .modal-title {
       font-size: 1.15rem;
       font-weight: 900;
@@ -541,7 +542,7 @@
     /* 📅 週課表自適應水平滑動表格 */
     .schedule-table-wrapper {
       width: 100%;
-      overflow-x: auto;
+      overflow-x: auto; /* 允許橫向滑動 */
       -webkit-overflow-scrolling: touch;
       margin-top: 4px;
       border-radius: 8px;
@@ -552,7 +553,7 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      min-width: 520px;
+      min-width: 520px; /* 固定最小寬度，防止手機畫面上表格硬擠變形 */
     }
 
     .schedule-table th {
@@ -687,18 +688,24 @@
 <body>
 
   <div class="app-container">
+    
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
       <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
       
       <!-- 🟡 黃色小方塊選項 -->
       <div class="top-action-bar">
-        <div class="yellow-btn-box" onclick="openScheduleModal()">週課表</div>
-        <div class="yellow-btn-box" onclick="openHolidayModal()">停課日期</div>
+        <div class="yellow-btn-box" onclick="openScheduleModal()">
+          週課表
+        </div>
+        <div class="yellow-btn-box" onclick="openHolidayModal()">
+          停課日期
+        </div>
       </div>
     </div>
 
     <form id="bookingForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+      
       <div class="scrollable-content">
         <div id="courseCardList" class="course-card-list">
           <div class="loading-text">✨ 課程載入中，請稍候...</div>
@@ -707,6 +714,7 @@
 
       <div class="fixed-bottom-panel">
         <div class="bottom-form-layout">
+          
           <div class="left-action-group">
             <div id="trialSwitchRow" class="trial-switch-row disabled">
               <label class="trial-switch-label" for="trialCheckbox">我要體驗</label>
@@ -722,12 +730,29 @@
           </div>
 
           <div class="input-fields-group">
-            <select id="trialDateSelect" class="form-control-compact select-trial-date"></select>
-            <input type="text" id="name" class="form-control-compact" placeholder="請輸入姓名" required>
-            <input type="tel" id="phone" class="form-control-compact" placeholder="0912345678" maxlength="10" required>
+            <select id="trialDateSelect" class="form-control-compact select-trial-date">
+            </select>
+
+            <input 
+              type="text" 
+              id="name" 
+              class="form-control-compact" 
+              placeholder="請輸入姓名" 
+              required
+            >
+            <input 
+              type="tel" 
+              id="phone" 
+              class="form-control-compact" 
+              placeholder="0912345678" 
+              maxlength="10" 
+              required
+            >
           </div>
+
         </div>
       </div>
+
     </form>
   </div>
 
@@ -901,8 +926,7 @@
     async function fetchCourses() {
       const container = document.getElementById("courseCardList");
       try {
-        // 使用相對路徑向當前的 GAS 應用程式發送 Request
-        const response = await fetch("?action=getData");
+        const response = await fetch(GAS_URL);
         const data = await response.json();
 
         if (data.status === "success") {
@@ -932,6 +956,7 @@
       }
     }
 
+    /* 📅 自動擷取生成「週課表」內容 */
     function openScheduleModal() {
       const bodyEl = document.getElementById("scheduleModalBody");
       
@@ -1019,6 +1044,7 @@
       document.getElementById("scheduleModal").classList.remove("active");
     }
 
+    /* 🏖️ 自動擷取「停課時間」內容 */
     function openHolidayModal() {
       const bodyEl = document.getElementById("holidayModalBody");
 
@@ -1159,6 +1185,7 @@
       }
     }
 
+    /* 生成體驗日期：自動避開停課日並順延 (附提示) */
     function generateNextThreeDates(timeStr) {
       const dayMap = { "週一": 1, "周一": 1, "星期一": 1, "禮拜一": 1,
                        "週二": 2, "周二": 2, "星期二": 2, "禮拜二": 2,
@@ -1176,6 +1203,7 @@
         }
       }
 
+      // 整理目前停課清單 (取 MM/DD 比對)
       const holidayDates = (globalHolidaysData || []).map(h => h.rawDateStr || h.formattedDate);
 
       const results = [];
@@ -1188,12 +1216,13 @@
       while (count < 3) {
         if (targetDay === -1 || current.getDay() === targetDay) {
           const formatted = formatDateMD(current);
-          const shortDate = formatted.split(' ')[0];
+          const shortDate = formatted.split(' ')[0]; // 取得 MM/DD
 
+          // 檢查是否與停課日衝突
           const isHoliday = holidayDates.some(h => h && h.includes(shortDate));
 
           if (isHoliday) {
-            isDelayedFlag = true;
+            isDelayedFlag = true; // 遇到停課，不計數，跳過並自動順延至下一週
           } else {
             results.push({
               formatted: formatted,
@@ -1262,8 +1291,7 @@
       };
 
       try {
-        // 直接 POST 到同域的 GAS 應用程式 Endpoint
-        const res = await fetch(window.location.href, {
+        const res = await fetch(GAS_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
