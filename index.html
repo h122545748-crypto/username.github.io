@@ -446,12 +446,12 @@
 
           modalBody.innerHTML = `
             <div class="card-info-box">
-              <div class="card-info-row"><span>卡片 ID (A欄)：</span><b>${card.cardId || "無"}</b></div>
-              <div class="card-info-row"><span>會員姓名 (B欄)：</span><b>${card.memberName}</b></div>
-              <div class="card-info-row"><span>剩餘點數 (D欄)：</span><b style="color:#d97706;">${card.remainingPoints} 點</b></div>
-              <div class="card-info-row"><span>使用期限 (E欄)：</span><b>${card.expiryDate}</b></div>
+              <div class="card-info-row"><span>卡片 ID ：</span><b>${card.cardId || "無"}</b></div>
+              <div class="card-info-row"><span>會員姓名 ：</span><b>${card.memberName}</b></div>
+              <div class="card-info-row"><span>剩餘點數 ：</span><b style="color:#d97706;">${card.remainingPoints} 點</b></div>
+              <div class="card-info-row"><span>使用期限 ：</span><b>${card.expiryDate}</b></div>
             </div>
-            <div class="card-logs-title">📋 開卡(儲值)點數後使用記錄 (G~Z欄):</div>
+            <div class="card-logs-title">📋 開卡(儲值)點數後使用記錄 :</div>
             <div class="card-logs-list">${logsHtml}</div>
           `;
         } else {
