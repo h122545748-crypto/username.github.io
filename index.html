@@ -36,10 +36,17 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       animation: titleGradientFlow 3s ease infinite; letter-spacing: 1px;
     }
-    .user-welcome {
-      text-align: center; color: var(--text-sub); font-size: 0.88rem; margin-bottom: 10px;
-      padding-bottom: 8px; border-bottom: 1px dashed #e5e5ea;
+    .user-welcome-row {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #e5e5ea;
     }
+    .user-welcome { color: var(--text-sub); font-size: 0.88rem; }
+    .card-view-btn {
+      background: #2563eb; color: #fff; border: none; border-radius: 6px;
+      padding: 3px 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3); transition: all 0.2s ease;
+    }
+    .card-view-btn:active { transform: scale(0.95); }
     .top-action-bar { display: flex; gap: 12px; justify-content: center; margin-top: 4px; }
     .yellow-btn-box {
       flex: 1; background: linear-gradient(135deg, #fbcfe8, #fef08a) #facc15; color: #854d0e;
@@ -159,6 +166,7 @@
     .modal-title.teacher { color: #7928ca; text-align: left; }
     .modal-title.schedule { color: #6b21a8; }
     .modal-title.holiday { color: #d97706; }
+    .modal-title.membercard { color: #2563eb; }
     .modal-body { font-size: 0.9rem; color: #4b5563; margin-bottom: 12px; line-height: 1.45; font-weight: 500; text-align: left; word-break: break-all; white-space: pre-wrap; }
     .modal-btn { width: 100%; padding: 10px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; color: #fff; background: #1d1d1f; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
     .modal-btn:active { transform: scale(0.98); }
@@ -176,6 +184,10 @@
     .holiday-reason { font-weight: 700; color: #4b5563; font-size: 0.85rem; }
     .teacher-photo-large { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
     .teacher-section-title { font-size: 0.82rem; font-weight: 800; color: #7928ca; margin-top: 6px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+    .card-info-row { display: flex; justify-content: space-between; font-size: 0.88rem; color: #1e3a8a; margin-bottom: 6px; }
+    .card-logs-title { font-weight: 800; color: #1d4ed8; font-size: 0.85rem; margin-top: 10px; margin-bottom: 6px; }
+    .card-logs-list { max-height: 140px; overflow-y: auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 10px; font-size: 0.8rem; color: #374151; }
     .processing-overlay {
       position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
       display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
@@ -194,7 +206,11 @@
   <div class="app-container">
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
-      <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
+      <div class="user-welcome-row">
+        <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
+        <!-- 需求 1：檢視會員卡按鈕 -->
+        <button type="button" class="card-view-btn" onclick="openMemberCardModal()">檢視會員卡</button>
+      </div>
       <div class="top-action-bar">
         <div class="yellow-btn-box" onclick="openScheduleModal()">週課表</div>
         <div class="yellow-btn-box" onclick="openHolidayModal()">停課日期</div>
@@ -271,6 +287,18 @@
       <div id="teacherModalTitle" class="modal-title teacher">師資介紹</div>
       <div id="teacherModalBody" class="modal-body"></div>
       <button type="button" class="modal-btn" onclick="closeTeacherModal()">關閉視窗</button>
+    </div>
+  </div>
+
+  <!-- 需求 1：會員卡資料小視窗 Modal -->
+  <div id="memberCardModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-close-x" onclick="closeMemberCardModal()">✕</div>
+      <div class="modal-title membercard">💳 會員卡資料</div>
+      <div id="memberCardModalBody" class="modal-body">
+        <div style="text-align:center; padding:15px; color:#6b7280;">查詢卡片資料中...</div>
+      </div>
+      <button type="button" class="modal-btn" style="background:#2563eb;" onclick="closeMemberCardModal()">關閉視窗</button>
     </div>
   </div>
 
@@ -387,6 +415,55 @@
           container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
         }
       }
+    }
+
+    /* 需求 1：開啟會員卡視窗並向 GAS 查詢資料 */
+    async function openMemberCardModal() {
+      const modal = d.getElementById("memberCardModal");
+      const modalBody = d.getElementById("memberCardModalBody");
+      const nameInput = d.getElementById("name").value.trim();
+      const searchName = nameInput || lineProfile.displayName;
+
+      modal.classList.add("active");
+      modalBody.innerHTML = `<div style="text-align:center; padding:15px; color:#6b7280;">🔍 正在查詢【${searchName}】的卡片資料...</div>`;
+
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "getMemberCardByName", name: searchName })
+        });
+        const result = await res.json();
+
+        if (result.status === "success") {
+          const card = result.cardData;
+          let logsHtml = "";
+          if (card.usageLogs && card.usageLogs.length > 0) {
+            logsHtml = card.usageLogs.map((log, idx) => `<div>${idx + 1}. ${log}</div>`).join("");
+          } else {
+            logsHtml = "<div style='color:#9ca3af;'>尚無使用記錄</div>";
+          }
+
+          modalBody.innerHTML = `
+            <div class="card-info-box">
+              <div class="card-info-row"><span>卡片 ID (A欄)：</span><b>${card.cardId || "無"}</b></div>
+              <div class="card-info-row"><span>會員姓名 (B欄)：</span><b>${card.memberName}</b></div>
+              <div class="card-info-row"><span>剩餘點數 (D欄)：</span><b style="color:#d97706;">${card.remainingPoints} 點</b></div>
+              <div class="card-info-row"><span>使用期限 (E欄)：</span><b>${card.expiryDate}</b></div>
+            </div>
+            <div class="card-logs-title">📋 開卡(儲值)點數後使用記錄 (G~Z欄):</div>
+            <div class="card-logs-list">${logsHtml}</div>
+          `;
+        } else {
+          modalBody.innerHTML = `<div style="text-align:center; color:#ef4444; padding:15px;">⚠️ ${result.message}</div>`;
+        }
+      } catch (err) {
+        modalBody.innerHTML = `<div style="text-align:center; color:#ef4444; padding:15px;">⚠️ 查詢失敗，請稍後再試。</div>`;
+      }
+    }
+
+    function closeMemberCardModal() {
+      d.getElementById("memberCardModal").classList.remove("active");
     }
 
     function openScheduleModal() {
