@@ -40,6 +40,22 @@
       text-align: center; color: var(--text-sub); font-size: 0.88rem; margin-bottom: 10px;
       padding-bottom: 8px; border-bottom: 1px dashed #e5e5ea;
     }
+
+    /* 需求 1：紅色高亮閃爍提示樣式，字體放大 2 倍 (2.1rem) */
+    .loading-notice {
+      color: #ef4444;
+      font-size: 2.1rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+      animation: noticePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes noticePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.97); }
+    }
+
     .top-action-bar { display: flex; gap: 12px; justify-content: center; margin-top: 4px; }
     .yellow-btn-box {
       flex: 1; background: linear-gradient(135deg, #fbcfe8, #fef08a) #facc15; color: #854d0e;
@@ -195,6 +211,10 @@
     <div class="fixed-top-panel">
       <h2>文舞集 目前課程</h2>
       <div id="userWelcome" class="user-welcome">正在連結 LINE 帳號...</div>
+      
+      <!-- 最新資料讀取中提示 -->
+      <div id="dataLoadingNotice" class="loading-notice">最新資料讀取中...</div>
+
       <div class="top-action-bar">
         <div class="yellow-btn-box" onclick="openScheduleModal()">週課表</div>
         <div class="yellow-btn-box" onclick="openHolidayModal()">停課日期</div>
@@ -285,7 +305,7 @@
 
   <script>
     const MY_LIFF_ID = "2010788391-bIBpQ7sB";
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxh-0Xq4bF3sPYwwI-H6MjpN2ZjY3Jp1_ZfQN2TBrzNqGPj2P0MjudeHG2DYsQE4oytEg/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzpFR7wxpoBoL74g_nUx_j88lN50VcKEbKW9h5_6gtalOqVzI3K-Ap0MYgsnUnbv0NPIg/exec";
     const d = document;
 
     let lineProfile = { userId: "", displayName: "" };
@@ -365,13 +385,22 @@
 
     async function fetchCourses() {
       const container = d.getElementById("courseCardList");
+      const loadingNotice = d.getElementById("dataLoadingNotice");
+      
+      // 需求 2：確保重新讀取資料時顯示最新資料讀取提示
+      if (loadingNotice) loadingNotice.style.display = "block";
+
       try {
         const response = await fetch(GAS_URL);
         const data = await response.json();
 
         if (data.status === "success") {
           if (data.holidays) globalHolidaysData = data.holidays;
-          if (data.announcement && data.announcement.trim() !== "") showAnnouncementModal(data.announcement);
+
+          // 需求 2：先檢查並彈出公告 modal
+          if (data.announcement && data.announcement.trim() !== "") {
+            showAnnouncementModal(data.announcement);
+          }
 
           if (data.courses && data.courses.length > 0) {
             globalCoursesData = data.courses;
@@ -386,6 +415,9 @@
         if (!localStorage.getItem("wenwu_courses_cache")) {
           container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
         }
+      } finally {
+        // 需求 2：確保在公告小視窗呈現（以及課程/停課資料更新）完畢之後，才關閉提示
+        if (loadingNotice) loadingNotice.style.display = "none";
       }
     }
 
