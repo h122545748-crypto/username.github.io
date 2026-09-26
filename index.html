@@ -326,6 +326,8 @@
       const lastFetchTime = parseInt(localStorage.getItem("wenwu_last_fetch_time") || "0", 10);
       const now = Date.now();
       if (lastFetchTime > 0 && (now - lastFetchTime) > 15 * 60 * 1000) {
+        // 先更新時間戳記，防止 reload 後再次觸發（避免死循環）
+        localStorage.setItem("wenwu_last_fetch_time", String(now));
         location.reload();
         return;
       }
