@@ -317,6 +317,8 @@
       if (cachedCourses) {
         try {
           globalCoursesData = JSON.parse(cachedCourses);
+          // 前端排序：按週一到週日，同星期按開課時間排序
+          sortCoursesByWeekday(globalCoursesData);
           renderCourses(globalCoursesData, true);
         } catch (e) { console.error("讀取快取失敗:", e); }
       }
@@ -330,6 +332,30 @@
       await initLIFF();
       await fetchCourses();
     });
+
+    // 前端排序函數
+    function sortCoursesByWeekday(courses) {
+      const dayNameMap = {"週一":0,"週二":1,"週三":2,"週四":3,"週五":4,"週六":5,"週日":6,"周一":0,"周二":1,"周三":2,"周四":3,"周五":4,"周六":5,"周日":6,"星期天":6};
+      courses.sort((a, b) => {
+        const getDayNum = (t) => {
+          if (!t) return 7;
+          const s = t.toString();
+          for (const [key, val] of Object.entries(dayNameMap)) {
+            if (s.includes(key)) return val;
+          }
+          return 7;
+        };
+        const getTimeMins = (t) => {
+          if (!t) return 9999;
+          const m = t.toString().match(/(\d{1,2}):(\d{2})/);
+          return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 9999;
+        };
+        const da = getDayNum(a.timeInfo);
+        const db = getDayNum(b.timeInfo);
+        if (da !== db) return da - db;
+        return getTimeMins(a.timeInfo) - getTimeMins(b.timeInfo);
+      });
+    }
 
     async function initLIFF() {
       const welcomeEl = d.getElementById("userWelcome");
@@ -411,8 +437,11 @@
 
           if (data.courses && data.courses.length > 0) {
             globalCoursesData = data.courses;
+            // 後端已排序，但為保險起见前端再排序一次
+            sortCoursesByWeekday(globalCoursesData);
             renderCourses(globalCoursesData, false);
-            localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
+            // 存儲排序後的數據
+            localStorage.setItem("wenwu_courses_cache", JSON.stringify(globalCoursesData));
             localStorage.setItem("wenwu_last_fetch_time", String(Date.now()));
           }
         } else if (!localStorage.getItem("wenwu_courses_cache")) {
