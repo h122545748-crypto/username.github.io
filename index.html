@@ -655,10 +655,10 @@
     }
 
     function formatDateMD(dateObj) {
+      const year = dateObj.getFullYear();
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
       const date = String(dateObj.getDate()).padStart(2, '0');
-      const dayName = ["日", "一", "二", "三", "四", "五", "六"][dateObj.getDay()];
-      return `${month}/${date} (${dayName})`;
+      return `${year}/${month}/${date}`;  // 例如: 2025/09/28
     }
 
     d.getElementById("bookingForm").addEventListener("submit", async function(e) {
