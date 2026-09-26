@@ -320,6 +320,13 @@
           renderCourses(globalCoursesData, true);
         } catch (e) { console.error("讀取快取失敗:", e); }
       }
+      // 自動刷新檢查：距上次成功讀取超過15分鐘時強制刷新
+      const lastFetchTime = parseInt(localStorage.getItem("wenwu_last_fetch_time") || "0", 10);
+      const now = Date.now();
+      if (lastFetchTime > 0 && (now - lastFetchTime) > 15 * 60 * 1000) {
+        location.reload();
+        return;
+      }
       await initLIFF();
       await fetchCourses();
     });
@@ -406,6 +413,7 @@
             globalCoursesData = data.courses;
             renderCourses(globalCoursesData, false);
             localStorage.setItem("wenwu_courses_cache", JSON.stringify(data.courses));
+            localStorage.setItem("wenwu_last_fetch_time", String(Date.now()));
           }
         } else if (!localStorage.getItem("wenwu_courses_cache")) {
           container.innerHTML = "<div class='loading-text'>目前暫無開放預約的課程。</div>";
