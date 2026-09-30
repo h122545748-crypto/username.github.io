@@ -41,7 +41,7 @@
       padding-bottom: 8px; border-bottom: 1px dashed #e5e5ea;
     }
 
-    /* 需求 1：紅色高亮閃爍提示樣式，字體放大 2 倍 (2.1rem) */
+    /* 紅色高亮閃爍提示樣式，字體放大 2 倍 */
     .loading-notice {
       color: #ef4444;
       font-size: 2.1rem;
@@ -422,7 +422,7 @@
       const container = d.getElementById("courseCardList");
       const loadingNotice = d.getElementById("dataLoadingNotice");
       
-      // 需求 2：確保重新讀取資料時顯示最新資料讀取提示
+      // 確保重新讀取資料時顯示最新資料讀取提示
       if (loadingNotice) loadingNotice.style.display = "block";
 
       try {
@@ -432,7 +432,7 @@
         if (data.status === "success") {
           if (data.holidays) globalHolidaysData = data.holidays;
 
-          // 需求 2：先檢查並彈出公告 modal
+          // 先檢查並彈出公告 modal
           if (data.announcement && data.announcement.trim() !== "") {
             showAnnouncementModal(data.announcement);
           }
@@ -455,7 +455,7 @@
           container.innerHTML = "<div class='loading-text' style='color:red;'>載入課程失敗，請重新整理。</div>";
         }
       } finally {
-        // 需求 2：確保在公告小視窗呈現（以及課程/停課資料更新）完畢之後，才關閉提示
+        // 確保在公告小視窗呈現（以及課程/停課資料更新）完畢之後，才關閉提示
         if (loadingNotice) loadingNotice.style.display = "none";
       }
     }
@@ -602,16 +602,12 @@
         trialDateSelect.innerHTML = "";
         let firstAvailableSet = false;
 
+        // 停課日會被 generateNextThreeDates 直接跳過，回傳的 3 個日期皆為可選
         generateNextThreeDates(courseObj.timeInfo).forEach(optData => {
           const opt = d.createElement("option");
           opt.value = optData.formatted;
-          if (optData.isHoliday) {
-            opt.textContent = `體驗日：${optData.formatted} (停課，不可選擇)`;
-            opt.disabled = true; opt.style.color = "#a0a0a0"; opt.style.backgroundColor = "#f3f3f3";
-          } else {
-            opt.textContent = `體驗日：${optData.formatted}`;
-            if (!firstAvailableSet) { opt.selected = true; firstAvailableSet = true; }
-          }
+          opt.textContent = `體驗日：${optData.formatted}`;
+          if (!firstAvailableSet) { opt.selected = true; firstAvailableSet = true; }
           trialDateSelect.appendChild(opt);
         });
       } else {
@@ -628,6 +624,7 @@
       trialDateSelect.classList.toggle("active", trialCheckbox.checked);
     }
 
+    // 產生接下來 3 個可體驗日期；遇停課日直接跳過（不顯示），往下順延至下一個上課日
     function generateNextThreeDates(timeStr) {
       const dayMap = { "週一":1, "周一":1, "星期一":1, "禮拜一":1, "週二":2, "周二":2, "星期二":2, "禮拜二":2, "週三":3, "周三":3, "星期三":3, "禮拜三":3, "週四":4, "周四":4, "星期四":4, "禮拜四":4, "週五":5, "周五":5, "星期五":5, "禮拜五":5, "週六":6, "周六":6, "星期六":6, "禮拜六":6, "週日":0, "周日":0, "星期日":0, "禮拜日":0, "星期天":0, "禮拜天":0 };
 
@@ -636,18 +633,31 @@
         if (timeStr.includes(key)) { targetDay = dayMap[key]; break; }
       }
 
-      const holidayDates = (globalHolidaysData || []).map(h => h.rawDateStr || h.formattedDate);
+      // 將停課日期統一正規化為 "MM/DD" 以便比對（相容 rawDateStr="09/28" 與 formattedDate="9/28(日)"）
+      const holidayMDs = (globalHolidaysData || []).map(h => {
+        const raw = (h.rawDateStr || h.formattedDate || "").toString();
+        const m = raw.match(/(\d{1,2})\/(\d{1,2})/);
+        return m ? `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}` : "";
+      }).filter(Boolean);
+
       const results = [];
       let validCount = 0;
+      let safety = 0;
       let current = new Date();
       current.setDate(current.getDate() + 1);
 
-      while (validCount < 3) {
+      // 停課日直接跳過，不加入選單；直到湊滿 3 個可體驗日
+      while (validCount < 3 && safety < 365) {
+        safety++;
         if (targetDay === -1 || current.getDay() === targetDay) {
-          const formatted = formatDateMD(current);
-          const isHoliday = holidayDates.some(h => h && h.includes(formatted.split(' ')[0]));
-          results.push({ formatted, isHoliday });
-          if (!isHoliday) validCount++;
+          const mm = String(current.getMonth() + 1).padStart(2, '0');
+          const dd = String(current.getDate()).padStart(2, '0');
+          const md = `${mm}/${dd}`;
+          const isHoliday = holidayMDs.includes(md);
+          if (!isHoliday) {
+            results.push({ formatted: formatDateMD(current), isHoliday: false });
+            validCount++;
+          }
         }
         current.setDate(current.getDate() + 1);
       }
