@@ -374,9 +374,43 @@
         welcomeEl.innerText = `👋 你好，${lineProfile.displayName}`;
         submitBtn.disabled = false;
         updateFormState();
+
+        // 記錄本次登入瀏覽（不阻塞畫面，失敗也不影響使用者）
+        logVisitToSheet(lineProfile.userId, lineProfile.displayName);
       } catch (err) {
         console.error("LIFF 初始化失敗:", err);
         welcomeEl.innerText = "⚠️ 請在 LINE App 內開啟此頁面";
+      }
+    }
+
+    // 記錄登入瀏覽：僅寫入雲端「瀏覽記錄」分頁，不讀取、不阻塞畫面
+    // 5 分鐘節流：同一 userId 短時間內重複 reload 不會重複寫入，避免觀察人氣時被洗版
+    function logVisitToSheet(userId, displayName) {
+      if (!userId) return;
+
+      try {
+        const now = Date.now();
+        const lastVisit = parseInt(localStorage.getItem("wenwu_last_visit_ts") || "0", 10);
+        const lastUserId = localStorage.getItem("wenwu_last_visit_uid") || "";
+
+        // 同一人 5 分鐘內不重複記錄
+        if (lastUserId === userId && (now - lastVisit) < 5 * 60 * 1000) {
+          return;
+        }
+
+        // 先寫本機時間戳，避免連點或快速 reload 時重複送出
+        localStorage.setItem("wenwu_last_visit_ts", String(now));
+        localStorage.setItem("wenwu_last_visit_uid", userId);
+
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "logVisit", userId, displayName })
+        }).catch(() => {
+          // 靜默失敗：瀏覽記錄不影響預約功能，失敗就算了
+        });
+      } catch (e) {
+        // localStorage 被停用等情況也不影響使用者
       }
     }
 
