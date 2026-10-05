@@ -22,6 +22,7 @@
     .app-container {
       display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto;
       background: #ffffff; position: relative;
+      padding-bottom: 5vh; /* 底部留白 5%，把報名欄位往上頂，避免被瀏覽器上方 bar 遮擋 */
     }
 
     /* 頂部資訊 */
@@ -137,25 +138,47 @@
       transition: all 0.22s ease;
       display: block;
     }
+    /* 單日課程：淡黃色底 */
     .course-card.single-day {
-      background: linear-gradient(135deg, #e0f2fe, #dbeafe);
-      border-color: #93c5fd;
+      background: linear-gradient(135deg, #fef9c3, #fef08a);
+      border-color: #fbbf24;
     }
+    /* 老師請假：灰底、不可選 */
+    .course-card.teacher-leave {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+      opacity: 0.85;
+      cursor: not-allowed;
+    }
+    /* 選中狀態：紅框（單日、每週課程都適用） */
     .course-radio-input:checked + .course-card {
       border-color: var(--primary-pink);
-      box-shadow: 0 6px 18px rgba(255, 0, 127, 0.22);
+      box-shadow: 0 6px 18px rgba(255, 0, 127, 0.28);
       transform: translateY(-2px);
     }
-    .course-radio-input:checked + .course-card.single-day {
-      border-color: #2563eb;
-      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+    .course-radio-input:checked + .course-card.teacher-leave {
+      border-color: #d1d5db;
+      box-shadow: none;
+      transform: none;
     }
     .course-card-name {
       font-size: 1rem; font-weight: 900; color: var(--text-main);
       padding-right: 70px; line-height: 1.3; margin-bottom: 6px;
     }
     .course-card-name .single-badge {
-      display: inline-block; background: #2563eb; color: #fff;
+      display: inline-block; background: #b45309; color: #fff;
+      font-size: 0.65rem; font-weight: 800; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px; vertical-align: middle;
+    }
+    /* 開放體驗標籤：紅底白字 */
+    .course-card-name .trial-open-badge {
+      display: inline-block; background: #dc2626; color: #fff;
+      font-size: 0.65rem; font-weight: 800; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px; vertical-align: middle;
+    }
+    /* 老師請假標籤：紅底白字 */
+    .course-card-name .leave-badge {
+      display: inline-block; background: #dc2626; color: #fff;
       font-size: 0.65rem; font-weight: 800; padding: 2px 6px;
       border-radius: 4px; margin-left: 6px; vertical-align: middle;
     }
@@ -175,7 +198,11 @@
     }
     .teacher-avatar-btn:active { transform: translateY(-50%) scale(1.15); }
     .course-card.single-day .teacher-avatar-btn {
-      border-color: #2563eb;
+      border-color: #b45309;
+    }
+    .course-card.teacher-leave .teacher-avatar-btn {
+      border-color: #9ca3af;
+      opacity: 0.7;
     }
     .course-card-full {
       position: absolute; top: 8px; right: 10px;
@@ -268,8 +295,12 @@
       background-color: #fff; border-color: var(--primary-pink);
       box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.15);
     }
+    .form-control-compact.invalid {
+      border-color: #dc2626;
+      background: #fef2f2;
+    }
 
-    /* ========== Modal 樣式（保留原樣） ========== */
+    /* ========== Modal 樣式 ========== */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(5px);
@@ -435,8 +466,8 @@
     let lineProfile = { userId: "", displayName: "" };
     let globalCoursesData = [];
     let globalHolidaysData = [];
-    let selectedDate = null;        // Date 物件，學員點選的日期
-    let selectedCourseObj = null;   // 目前選中的課程物件
+    let selectedDate = null;
+    let selectedCourseObj = null;
 
     d.addEventListener("DOMContentLoaded", async () => {
       const cachedCourses = localStorage.getItem("wenwu_courses_cache");
@@ -462,7 +493,6 @@
 
     // ========== 排序 ==========
     function sortCoursesByWeekday(courses) {
-      const dayNameMap = {"週一":1,"週二":2,"週三":3,"週四":4,"週五":5,"週六":6,"週日":0,"周一":1,"周二":2,"周三":3,"周四":4,"周五":5,"周六":6,"周日":0,"星期天":0};
       courses.sort((a, b) => {
         const da = getDayNumFromTimeInfo(a.timeInfo);
         const db = getDayNumFromTimeInfo(b.timeInfo);
@@ -474,7 +504,7 @@
     function getDayNumFromTimeInfo(t) {
       if (!t) return 7;
       const s = t.toString();
-      if (/^\d{4}\//.test(s)) return 8; // 單日課程排最後
+      if (/^\d{4}\//.test(s)) return 8;
       const dayNameMap = {"週一":1,"週二":2,"週三":3,"週四":4,"週五":5,"週六":6,"週日":0,"周一":1,"周二":2,"周三":3,"周四":4,"周五":5,"周六":6,"周日":0,"星期天":0};
       for (const [key, val] of Object.entries(dayNameMap)) {
         if (s.includes(key)) return val;
@@ -598,7 +628,6 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // 本週週一
       const dayOfWeek = today.getDay();
       const diffToMonday = dayOfWeek === 0 ? -6 : (1 - dayOfWeek);
       const thisMonday = new Date(today);
@@ -611,7 +640,6 @@
         const weekStart = new Date(thisMonday);
         weekStart.setDate(thisMonday.getDate() + w * 7);
 
-        // 月份標題（以該週週一為準）
         const monthKey = `${weekStart.getFullYear()}-${weekStart.getMonth()}`;
         if (monthKey !== lastMonthKey) {
           const monthHeader = d.createElement("div");
@@ -621,7 +649,6 @@
           lastMonthKey = monthKey;
         }
 
-        // 該週 7 天
         const weekRow = d.createElement("div");
         weekRow.className = "calendar-week";
 
@@ -647,12 +674,10 @@
 
       if (isToday) cell.classList.add("today");
 
-      // 判斷是否為停課日
-      const holiday = isHolidayDate(date);
-      // 該日課程
+      const holidayInfo = getHolidayInfo(date);
       const courses = getCoursesForDate(date);
-
-      const bookable = !isPast && !holiday && courses.length > 0;
+      // 整天停課才不可點；老師請假仍可點
+      const bookable = !isPast && !holidayInfo.isFullDayHoliday && courses.length > 0;
 
       if (bookable) {
         cell.classList.add("bookable");
@@ -661,27 +686,50 @@
         cell.classList.add("disabled");
       }
 
-      // 標示已選中
       if (selectedDate && dateTime === selectedDate.getTime()) {
         cell.classList.add("selected");
       }
 
-      // 儲存日期供後續使用
       cell.dataset.date = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
       return cell;
     }
 
-    function isHolidayDate(date) {
+    function getHolidayInfo(date) {
       const mm = String(date.getMonth() + 1).padStart(2, "0");
       const dd = String(date.getDate()).padStart(2, "0");
       const md = `${mm}/${dd}`;
-      return (globalHolidaysData || []).some(h => {
+
+      const matched = (globalHolidaysData || []).filter(h => {
         const raw = (h.rawDateStr || h.formattedDate || "").toString();
         const m = raw.match(/(\d{1,2})\/(\d{1,2})/);
         if (!m) return false;
         const hMD = `${m[1].padStart(2, "0")}/${m[2].padStart(2, "0")}`;
         return hMD === md;
       });
+
+      if (matched.length === 0) {
+        return { isFullDayHoliday: false, affectedCourses: [], reason: "" };
+      }
+
+      const allAffected = [];
+      let reason = "";
+      let hasFullDayHoliday = false;
+
+      matched.forEach(h => {
+        const affected = h.affectedCourses || [];
+        if (affected.length === 0) {
+          hasFullDayHoliday = true;
+        } else {
+          allAffected.push(...affected);
+        }
+        if (!reason && h.reason) reason = h.reason;
+      });
+
+      if (hasFullDayHoliday) {
+        return { isFullDayHoliday: true, affectedCourses: [], reason };
+      }
+
+      return { isFullDayHoliday: false, affectedCourses: allAffected, reason };
     }
 
     function getCoursesForDate(targetDate) {
@@ -691,14 +739,12 @@
       return globalCoursesData.filter(course => {
         const timeInfo = (course.timeInfo || "").toString();
 
-        // 單日課程
         const singleDateMatch = timeInfo.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})/);
         if (singleDateMatch) {
           const courseDateStr = `${singleDateMatch[1]}/${parseInt(singleDateMatch[2], 10)}/${parseInt(singleDateMatch[3], 10)}`;
           return courseDateStr === targetDateStr;
         }
 
-        // 每週重複課程
         const dayKey = getDayKey(timeInfo);
         if (dayKey) {
           const dayNumMap = { "週一":1, "週二":2, "週三":3, "週四":4, "週五":5, "週六":6, "週日":0 };
@@ -714,7 +760,6 @@
       selectedDate = date;
       selectedCourseObj = null;
 
-      // 更新月曆選中樣式
       const cells = d.querySelectorAll(".calendar-day");
       cells.forEach(cell => {
         cell.classList.remove("selected");
@@ -724,34 +769,44 @@
         }
       });
 
-      // 渲染下半部課程卡片
       renderCourseCards(date);
 
-      // 重置體驗開關
       d.getElementById("trialCheckbox").checked = false;
     }
 
     function renderCourseCards(date) {
       const container = d.getElementById("courseCardsContainer");
       const courses = getCoursesForDate(date);
+      const holidayInfo = getHolidayInfo(date);
 
       if (courses.length === 0) {
         container.innerHTML = '<div class="hint-text">此日無課程</div>';
         return;
       }
 
-      // 依開課時間排序
       courses.sort((a, b) => parseStartTimeMinutes(a.timeInfo) - parseStartTimeMinutes(b.timeInfo));
 
       let html = '<div class="course-card-list">';
       courses.forEach((course, idx) => {
         const isSingleDay = /^\d{4}\//.test((course.timeInfo || "").toString());
-        const cardClass = isSingleDay ? "course-card single-day" : "course-card";
-        const badgeHtml = isSingleDay ? '<span class="single-badge">單日</span>' : "";
+        const isTeacherOnLeave = holidayInfo.affectedCourses.includes(course.courseName);
+
+        let cardClass = "course-card";
+        if (isSingleDay) cardClass += " single-day";
+        if (isTeacherOnLeave) cardClass += " teacher-leave";
+
+        let badgeHtml = "";
+        if (isTeacherOnLeave) {
+          badgeHtml = '<span class="leave-badge">老師請假</span>';
+        } else if (isSingleDay) {
+          badgeHtml = '<span class="single-badge">單日</span>';
+        } else if (course.trialStatus === "開放") {
+          badgeHtml = '<span class="trial-open-badge">開放體驗</span>';
+        }
+
         const avatarStyle = course.teacherPhoto ? `style="background-image: url('${course.teacherPhoto}');"` : "";
         const avatarIcon = course.teacherPhoto ? "" : "👤";
 
-        // 顯示時間（單日課程去掉日期，只留時段）
         let displayTime = course.timeInfo || "";
         if (isSingleDay) {
           displayTime = displayTime.replace(/^\d{4}\/\d{1,2}\/\d{1,2}\s*/, "");
@@ -759,7 +814,7 @@
 
         html += `
           <div>
-            <input type="radio" name="courseSelection" id="course_${idx}" value="${course.courseName}" class="course-radio-input" onchange="updateFormState()">
+            <input type="radio" name="courseSelection" id="course_${idx}" value="${course.courseName}" class="course-radio-input" ${isTeacherOnLeave ? "disabled" : ""} onchange="updateFormState()">
             <label for="course_${idx}" class="${cardClass}" data-index="${idx}">
               <div class="course-card-name">${course.courseName}${badgeHtml}</div>
               <div class="course-card-info">
@@ -774,9 +829,13 @@
       html += '</div>';
       container.innerHTML = html;
 
-      // 自動選第一張
-      const firstRadio = container.querySelector('input[name="courseSelection"]');
-      if (firstRadio) firstRadio.checked = true;
+      // 自動選第一張非請假的課
+      const radios = container.querySelectorAll('input[name="courseSelection"]');
+      let firstAvailable = null;
+      for (const r of radios) {
+        if (!r.disabled) { firstAvailable = r; break; }
+      }
+      if (firstAvailable) firstAvailable.checked = true;
 
       updateFormState();
     }
@@ -801,14 +860,12 @@
 
       const isSingleDay = /^\d{4}\//.test((courseObj.timeInfo || "").toString());
 
-      // 單日課程：不可體驗
       if (isSingleDay) {
         trialSwitchRow.classList.add("disabled");
         trialCheckbox.checked = false;
         return;
       }
 
-      // 每週重複課程：依課程的 trialStatus
       if (courseObj.trialStatus === "開放") {
         trialSwitchRow.classList.remove("disabled");
         trialSwitchRow.classList.add("active-glow");
@@ -863,6 +920,25 @@
       }
     }
 
+    // ========== 即時電話驗證 ==========
+    function validatePhoneInput() {
+      const phoneInput = d.getElementById("phone");
+      const phone = phoneInput.value.trim();
+      const phoneRegex = /^09\d{8}$/;
+      if (phone === "") {
+        phoneInput.classList.remove("invalid");
+        return true;
+      }
+      if (!phoneRegex.test(phone)) {
+        phoneInput.classList.add("invalid");
+        return false;
+      }
+      phoneInput.classList.remove("invalid");
+      return true;
+    }
+
+    d.getElementById("phone").addEventListener("input", validatePhoneInput);
+
     // ========== 送出預約 ==========
     d.getElementById("bookingForm").addEventListener("submit", async function(e) {
       e.preventDefault();
@@ -887,8 +963,16 @@
       const name = d.getElementById("name").value.trim();
       const phone = d.getElementById("phone").value.trim();
 
-      if (!name || !phone) {
-        showCustomModal({ isSuccess: false, title: "報名失敗", body: "請填寫姓名與電話！" });
+      if (!name) {
+        showCustomModal({ isSuccess: false, title: "報名失敗", body: "請填寫姓名！" });
+        return;
+      }
+
+      // 電話防呆：必須是 09 開頭共 10 位數字
+      const phoneRegex = /^09\d{8}$/;
+      if (!phoneRegex.test(phone)) {
+        d.getElementById("phone").classList.add("invalid");
+        showCustomModal({ isSuccess: false, title: "報名失敗", body: "請輸入正確的台灣手機號碼<br>（09 開頭，共 10 位數字）" });
         return;
       }
 
@@ -923,7 +1007,7 @@
         if (result.status === "success") {
           const bodyMsg = isTrial
             ? `預約學員：<b>${name}</b><br>體驗課程：${result.courseName}<br>體驗日期：<b style="color:#d97706;">${result.trialDate}</b>`
-            : `預約學員：<b>${name}</b><br>報名課程：${result.courseName}<br>狀態：${result.bookingStatus}`;
+            : `預約學員：<b>${name}</b><br>報名課程：<b>${result.courseName}</b><br>狀態：已成功登記`;
 
           showCustomModal({
             isSuccess: true,
