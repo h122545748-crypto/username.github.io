@@ -91,7 +91,6 @@
       transform: scale(0.94);
       background: #fff0f6;
     }
-    /* 同欄高亮（週課表邏輯）：深粉漸層 60% */
     .calendar-day.bookable.highlight-col {
       background: linear-gradient(135deg, #ff66b2, #a87ddb);
       color: #fff;
@@ -100,7 +99,6 @@
     .calendar-day.bookable.highlight-col:active {
       background: linear-gradient(135deg, #ff4da6, #9a6ad3);
     }
-    /* 老師請假標籤：紅字粗體 "!!" */
     .calendar-day .leave-mark {
       display: inline-block;
       color: #dc2626;
@@ -110,12 +108,10 @@
       line-height: 1;
       vertical-align: middle;
     }
-    /* 高亮格或選中格的 "!!" 用白色 */
     .calendar-day.highlight-col .leave-mark,
     .calendar-day.selected .leave-mark {
       color: #fff;
     }
-    /* 整天停課：灰底無框，可點 */
     .calendar-day.holiday {
       background: #e5e5ea;
       color: #6b7280;
@@ -129,7 +125,6 @@
     .calendar-day.has-single-day {
       box-shadow: inset 0 0 0 2px #2196f3;
     }
-    /* 被點選的當天：深粉漸層（最深色） */
     .calendar-day.selected {
       background: linear-gradient(135deg, #ff007f, #7928ca) !important;
       color: #fff !important;
@@ -140,7 +135,6 @@
     .calendar-day.selected.has-single-day {
       box-shadow: 0 4px 14px rgba(255, 0, 127, 0.6), inset 0 0 0 2px #60a5fa;
     }
-    /* 高亮格若也是單日課程，保留藍色內框 */
     .calendar-day.highlight-col.has-single-day {
       box-shadow: inset 0 0 0 2px #60a5fa;
     }
@@ -165,19 +159,29 @@
       flex: 1; display: flex; flex-direction: column;
       overflow: hidden; min-height: 0;
     }
-    /* 選定資訊列（漸層底白字，sticky 於卡片上方） */
+    /* 選定資訊列 */
     .selected-info-bar {
       display: none;
       flex-shrink: 0;
-      background: linear-gradient(135deg, #ff007f, #7928ca);
-      color: #fff;
       padding: 10px 14px;
       font-size: 15px;
       font-weight: 800;
       text-align: center;
       letter-spacing: 0.5px;
-      box-shadow: 0 4px 12px rgba(255, 0, 127, 0.3);
+      color: #fff;
       z-index: 5;
+    }
+    .selected-info-bar.theme-week {
+      background: linear-gradient(135deg, #ff007f, #d10063);
+      box-shadow: 0 4px 12px rgba(255, 0, 127, 0.3);
+    }
+    .selected-info-bar.theme-trial {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+    }
+    .selected-info-bar.theme-single {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
     .hint-text {
       flex: 1; display: flex; align-items: center; justify-content: center;
@@ -859,7 +863,6 @@
       if (courses.length === 0) return false;
       const info = getHolidayInfo(date);
       if (info.isFullDayHoliday) return false;
-      // 老師請假也亮（依你需求 2）
       return true;
     }
 
@@ -890,6 +893,9 @@
     function updateSelectedInfoBar() {
       const bar = d.getElementById("selectedInfoBar");
 
+      // 清除舊主題
+      bar.classList.remove("theme-week", "theme-trial", "theme-single");
+
       if (!selectedDate) {
         bar.style.display = "none";
         return;
@@ -918,17 +924,23 @@
       const dayLabel = `(週${dow})`;
 
       let text = "";
+      let theme = "";
+
       if (isSingleDay) {
         text = `選定 ${dateStr} ${dayLabel} 單日課程 ${courseObj.courseName}`;
+        theme = "theme-single";
       } else if (isTrial) {
         text = `選定 ${dateStr} ${dayLabel} ${courseObj.courseName} 體驗課程`;
+        theme = "theme-trial";
       } else {
         const dayKey = getDayKey(courseObj.timeInfo);
         const weekLabel = dayKey ? `每${dayKey}` : "每週";
-        text = `選定 ${courseObj.courseName} ${weekLabel}固定開課`;
+        text = `選定 ${courseObj.courseName} ${weekLabel}固定上課`;
+        theme = "theme-week";
       }
 
       bar.textContent = text;
+      bar.classList.add(theme);
       bar.style.display = "block";
     }
 
@@ -992,7 +1004,7 @@
           const leaveReason = holidayInfo.courseReasons[course.courseName] || "老師請假";
           badgeHtml = `<span class="leave-badge">${leaveReason}</span>`;
         } else if (isSingleDay) {
-          badgeHtml = '<span class="single-badge">單日</span>';
+          badgeHtml = '<span class="single-badge">單日風格班</span>';
         } else if (course.trialStatus === "開放") {
           badgeHtml = '<span class="trial-open-badge">開放體驗</span>';
         }
