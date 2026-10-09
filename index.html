@@ -71,7 +71,6 @@
     .calendar-week {
       display: flex; padding: 2px 6px;
     }
-    /* 日期格子基本樣式：字級 16px */
     .calendar-day {
       flex: 1; height: 46px; margin: 2px;
       display: flex; align-items: center; justify-content: center;
@@ -81,7 +80,6 @@
       transition: all 0.18s ease;
       user-select: none;
     }
-    /* 可點日期：粉紅框 */
     .calendar-day.bookable {
       border: 2px solid #ffb6d9;
       cursor: pointer;
@@ -102,18 +100,20 @@
     .calendar-day.bookable.highlight-col:active {
       background: linear-gradient(135deg, #ff4da6, #9a6ad3);
     }
-    /* 老師請假標籤（數字後加「假」）：字級 16px 與日期同級 */
+    /* 老師請假標籤：紅字粗體 "!!" */
     .calendar-day .leave-mark {
       display: inline-block;
-      background: #dc2626;
-      color: #fff;
+      color: #dc2626;
       font-size: 16px;
-      font-weight: 800;
-      padding: 0 3px;
-      border-radius: 3px;
+      font-weight: 900;
       margin-left: 2px;
       line-height: 1;
       vertical-align: middle;
+    }
+    /* 高亮格或選中格的 "!!" 用白色 */
+    .calendar-day.highlight-col .leave-mark,
+    .calendar-day.selected .leave-mark {
+      color: #fff;
     }
     /* 整天停課：灰底無框，可點 */
     .calendar-day.holiday {
@@ -126,7 +126,6 @@
       transform: scale(0.94);
       background: #d1d5db;
     }
-    /* 單次課程：藍色內框 */
     .calendar-day.has-single-day {
       box-shadow: inset 0 0 0 2px #2196f3;
     }
@@ -144,10 +143,6 @@
     /* 高亮格若也是單日課程，保留藍色內框 */
     .calendar-day.highlight-col.has-single-day {
       box-shadow: inset 0 0 0 2px #60a5fa;
-    }
-    .calendar-day.selected .leave-mark {
-      background: #fff;
-      color: #dc2626;
     }
     .calendar-day.today::after {
       content: '';
@@ -169,6 +164,20 @@
     .booking-section {
       flex: 1; display: flex; flex-direction: column;
       overflow: hidden; min-height: 0;
+    }
+    /* 選定資訊列（漸層底白字，sticky 於卡片上方） */
+    .selected-info-bar {
+      display: none;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #ff007f, #7928ca);
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(255, 0, 127, 0.3);
+      z-index: 5;
     }
     .hint-text {
       flex: 1; display: flex; align-items: center; justify-content: center;
@@ -210,12 +219,10 @@
       box-shadow: none;
       transform: none;
     }
-    /* 課程名稱：22px */
     .course-card-name {
       font-size: 22px; font-weight: 900; color: var(--text-main);
       padding-right: 70px; line-height: 1.35; margin-bottom: 8px;
     }
-    /* 標籤：20px */
     .course-card-name .single-badge {
       display: inline-block; background: #2563eb; color: #fff;
       font-size: 20px; font-weight: 800; padding: 2px 8px;
@@ -434,6 +441,7 @@
     </div>
 
     <form id="bookingForm" class="booking-section">
+      <div id="selectedInfoBar" class="selected-info-bar"></div>
       <div id="courseCardsContainer" class="course-cards-scroll">
         <div class="hint-text">請點選上方日期</div>
       </div>
@@ -524,7 +532,10 @@
       await initLIFF();
       await fetchCourses();
 
-      d.getElementById("trialCheckbox").addEventListener("change", updateCalendarHighlight);
+      d.getElementById("trialCheckbox").addEventListener("change", () => {
+        updateCalendarHighlight();
+        updateSelectedInfoBar();
+      });
     });
 
     // ========== 排序 ==========
@@ -742,7 +753,7 @@
         if (holidayInfo.affectedCourses.length > 0) {
           const mark = d.createElement("span");
           mark.className = "leave-mark";
-          mark.textContent = "假";
+          mark.textContent = "!!";
           cell.appendChild(mark);
         }
         if (hasSingleDayCourse) {
@@ -848,7 +859,7 @@
       if (courses.length === 0) return false;
       const info = getHolidayInfo(date);
       if (info.isFullDayHoliday) return false;
-      if (info.affectedCourses.length > 0) return false;
+      // 老師請假也亮（依你需求 2）
       return true;
     }
 
@@ -875,14 +886,59 @@
       });
     }
 
+    // ========== 選定資訊列 ==========
+    function updateSelectedInfoBar() {
+      const bar = d.getElementById("selectedInfoBar");
+
+      if (!selectedDate) {
+        bar.style.display = "none";
+        return;
+      }
+
+      const selectedRadio = d.querySelector('input[name="courseSelection"]:checked');
+      if (!selectedRadio) {
+        bar.style.display = "none";
+        return;
+      }
+
+      const courseObj = globalCoursesData.find(c => c.courseName === selectedRadio.value);
+      if (!courseObj) {
+        bar.style.display = "none";
+        return;
+      }
+
+      const isSingleDay = /^\d{4}\//.test((courseObj.timeInfo || "").toString());
+      const isTrial = d.getElementById("trialCheckbox").checked;
+
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(selectedDate.getDate()).padStart(2, "0");
+      const dateStr = `${y}/${m}/${dd}`;
+      const dow = ["日", "一", "二", "三", "四", "五", "六"][selectedDate.getDay()];
+      const dayLabel = `(週${dow})`;
+
+      let text = "";
+      if (isSingleDay) {
+        text = `選定 ${dateStr} ${dayLabel} 單日課程 ${courseObj.courseName}`;
+      } else if (isTrial) {
+        text = `選定 ${dateStr} ${dayLabel} ${courseObj.courseName} 體驗課程`;
+      } else {
+        const dayKey = getDayKey(courseObj.timeInfo);
+        const weekLabel = dayKey ? `每${dayKey}` : "每週";
+        text = `選定 ${courseObj.courseName} ${weekLabel}固定開課`;
+      }
+
+      bar.textContent = text;
+      bar.style.display = "block";
+    }
+
     // ========== 選擇日期 ==========
     function handleSelectDate(date) {
       selectedDate = date;
+      d.getElementById("trialCheckbox").checked = false;
 
       renderCourseCards(date);
       updateCalendarHighlight();
-
-      d.getElementById("trialCheckbox").checked = false;
     }
 
     // ========== 點擊整天停課日 ==========
@@ -891,6 +947,8 @@
 
       const cells = d.querySelectorAll(".calendar-day");
       cells.forEach(cell => cell.classList.remove("selected", "highlight-col"));
+
+      d.getElementById("selectedInfoBar").style.display = "none";
 
       const container = d.getElementById("courseCardsContainer");
       const reasonText = holidayInfo.reason && holidayInfo.reason !== "例行停課" ? holidayInfo.reason : "";
@@ -984,6 +1042,7 @@
         trialSwitchRow.classList.add("disabled");
         trialCheckbox.checked = false;
         updateCalendarHighlight();
+        updateSelectedInfoBar();
         return;
       }
 
@@ -991,6 +1050,7 @@
       if (!courseObj) {
         trialSwitchRow.classList.add("disabled");
         updateCalendarHighlight();
+        updateSelectedInfoBar();
         return;
       }
 
@@ -1000,6 +1060,7 @@
         trialSwitchRow.classList.add("disabled");
         trialCheckbox.checked = false;
         updateCalendarHighlight();
+        updateSelectedInfoBar();
         return;
       }
 
@@ -1013,6 +1074,7 @@
       }
 
       updateCalendarHighlight();
+      updateSelectedInfoBar();
     }
 
     // ========== Modal ==========
