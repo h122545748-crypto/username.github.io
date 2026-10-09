@@ -71,10 +71,11 @@
     .calendar-week {
       display: flex; padding: 2px 6px;
     }
+    /* 日期格子基本樣式：字級 16px */
     .calendar-day {
       flex: 1; height: 46px; margin: 2px;
       display: flex; align-items: center; justify-content: center;
-      position: relative; font-size: 0.9rem;
+      position: relative; font-size: 16px;
       border-radius: 4px;
       color: #1d1d1f; cursor: default;
       transition: all 0.18s ease;
@@ -92,27 +93,29 @@
       transform: scale(0.94);
       background: #fff0f6;
     }
-    /* 同欄高亮（週課表邏輯）：淺粉底 + 粉紅框 */
+    /* 同欄高亮（週課表邏輯）：深粉漸層 60% */
     .calendar-day.bookable.highlight-col {
-      background: #ffe4ef;
+      background: linear-gradient(135deg, #ff66b2, #a87ddb);
+      color: #fff;
+      font-weight: 800;
     }
     .calendar-day.bookable.highlight-col:active {
-      background: #ffd1e3;
+      background: linear-gradient(135deg, #ff4da6, #9a6ad3);
     }
-    /* 老師請假日：粉紅框（無灰底），數字後加「假」標籤 */
+    /* 老師請假標籤（數字後加「假」）：字級 16px 與日期同級 */
     .calendar-day .leave-mark {
       display: inline-block;
       background: #dc2626;
       color: #fff;
-      font-size: 0.55rem;
+      font-size: 16px;
       font-weight: 800;
-      padding: 1px 3px;
+      padding: 0 3px;
       border-radius: 3px;
       margin-left: 2px;
       line-height: 1;
       vertical-align: middle;
     }
-    /* 整天停課：灰底無框，可點（點擊顯示停課提示） */
+    /* 整天停課：灰底無框，可點 */
     .calendar-day.holiday {
       background: #e5e5ea;
       color: #6b7280;
@@ -127,16 +130,20 @@
     .calendar-day.has-single-day {
       box-shadow: inset 0 0 0 2px #2196f3;
     }
-    /* 被點選的當天：深粉漸層（最高優先） */
+    /* 被點選的當天：深粉漸層（最深色） */
     .calendar-day.selected {
       background: linear-gradient(135deg, #ff007f, #7928ca) !important;
       color: #fff !important;
       border: 2px solid transparent !important;
       font-weight: 900;
-      box-shadow: 0 4px 12px rgba(255, 0, 127, 0.45);
+      box-shadow: 0 4px 14px rgba(255, 0, 127, 0.6);
     }
     .calendar-day.selected.has-single-day {
-      box-shadow: 0 4px 12px rgba(255, 0, 127, 0.45), inset 0 0 0 2px #60a5fa;
+      box-shadow: 0 4px 14px rgba(255, 0, 127, 0.6), inset 0 0 0 2px #60a5fa;
+    }
+    /* 高亮格若也是單日課程，保留藍色內框 */
+    .calendar-day.highlight-col.has-single-day {
+      box-shadow: inset 0 0 0 2px #60a5fa;
     }
     .calendar-day.selected .leave-mark {
       background: #fff;
@@ -149,7 +156,8 @@
       width: 5px; height: 5px;
       background: #2196f3; border-radius: 50%;
     }
-    .calendar-day.selected.today::after {
+    .calendar-day.selected.today::after,
+    .calendar-day.highlight-col.today::after {
       background: #fff;
     }
     .calendar-day.disabled {
@@ -202,10 +210,12 @@
       box-shadow: none;
       transform: none;
     }
+    /* 課程名稱：22px */
     .course-card-name {
-      font-size: 20px; font-weight: 900; color: var(--text-main);
+      font-size: 22px; font-weight: 900; color: var(--text-main);
       padding-right: 70px; line-height: 1.35; margin-bottom: 8px;
     }
+    /* 標籤：20px */
     .course-card-name .single-badge {
       display: inline-block; background: #2563eb; color: #fff;
       font-size: 20px; font-weight: 800; padding: 2px 8px;
@@ -514,7 +524,6 @@
       await initLIFF();
       await fetchCourses();
 
-      // 體驗開關變化 → 更新月曆高亮
       d.getElementById("trialCheckbox").addEventListener("change", updateCalendarHighlight);
     });
 
@@ -653,7 +662,7 @@
       }
     }
 
-    // ========== 月曆渲染（本週 + 未來 4 週 = 5 週） ==========
+    // ========== 月曆渲染（本週 + 未來 7 週 = 8 週） ==========
     function renderCalendar() {
       const scrollEl = d.getElementById("calendarScroll");
       scrollEl.innerHTML = "";
@@ -669,7 +678,7 @@
       let lastMonthKey = "";
       const fragment = d.createDocumentFragment();
 
-      for (let w = 0; w < 5; w++) {
+      for (let w = 0; w < 8; w++) {
         const weekStart = new Date(thisMonday);
         weekStart.setDate(thisMonday.getDate() + w * 7);
 
@@ -695,7 +704,6 @@
 
       scrollEl.appendChild(fragment);
 
-      // 初次渲染後套用高亮
       updateCalendarHighlight();
     }
 
@@ -732,7 +740,6 @@
       if (courses.length > 0) {
         cell.classList.add("bookable");
         if (holidayInfo.affectedCourses.length > 0) {
-          // 老師請假：加「假」標籤
           const mark = d.createElement("span");
           mark.className = "leave-mark";
           mark.textContent = "假";
@@ -835,7 +842,6 @@
     function shouldHighlight(date) {
       if (!selectedDate) return false;
       if (highlightMode === "single") return false;
-      // week 模式
       if (date.getDay() !== selectedDate.getDay()) return false;
       if (isSameDate(date, selectedDate)) return false;
       const courses = getCoursesForDate(date);
@@ -851,7 +857,6 @@
 
       const cells = d.querySelectorAll(".calendar-day");
       cells.forEach(cell => {
-        // 移除動態 class
         cell.classList.remove("highlight-col", "selected");
 
         if (!cell.dataset.date) return;
@@ -959,7 +964,6 @@
       html += '</div>';
       container.innerHTML = html;
 
-      // 自動選第一張非請假的課
       const radios = container.querySelectorAll('input[name="courseSelection"]');
       let firstAvailable = null;
       for (const r of radios) {
@@ -1008,7 +1012,6 @@
         trialCheckbox.checked = false;
       }
 
-      // 卡片切換時，月曆高亮即時跟著變
       updateCalendarHighlight();
     }
 
