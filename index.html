@@ -388,6 +388,18 @@
       line-height: 1.45; font-weight: 500; text-align: left;
       word-break: break-all; white-space: pre-wrap;
     }
+    /* 公告專用：放大 1.5 倍 */
+    .announcement-body {
+      font-size: 1.35rem !important;
+      line-height: 1.55 !important;
+    }
+    /* 公告特殊標記：紅色 + 粗體 + 放大 1.3 倍 */
+    .announcement-body .highlight-red {
+      color: #dc2626;
+      font-weight: 900;
+      font-size: 1.3em;
+      text-shadow: 0 0 4px rgba(220, 38, 38, 0.25);
+    }
     .modal-btn {
       width: 100%; padding: 10px; border: none; border-radius: 12px;
       font-size: 1rem; font-weight: 800; color: #fff;
@@ -480,7 +492,7 @@
     <div class="modal-box">
       <div class="modal-close-x" onclick="closeAnnouncementModal()">✕</div>
       <div class="modal-title announcement">公告</div>
-      <div id="announcementBody" class="modal-body"></div>
+      <div id="announcementBody" class="modal-body announcement-body"></div>
       <button type="button" class="modal-btn" style="background:#3b82f6;" onclick="closeAnnouncementModal()">我知道了</button>
     </div>
   </div>
@@ -513,7 +525,7 @@
     let globalCoursesData = [];
     let globalHolidaysData = [];
     let selectedDate = null;
-    let highlightMode = "week"; // "week" | "single"
+    let highlightMode = "week";
 
     d.addEventListener("DOMContentLoaded", async () => {
       const cachedCourses = localStorage.getItem("wenwu_courses_cache");
@@ -744,14 +756,12 @@
 
       const hasSingleDayCourse = courses.some(c => /^\d{4}\//.test((c.timeInfo || "").toString()));
 
-      // 1) 整天停課：灰底、無框、可點
       if (holidayInfo.isFullDayHoliday) {
         cell.classList.add("holiday");
         cell.addEventListener("click", () => handleHolidayClick(date, holidayInfo));
         return cell;
       }
 
-      // 2) 該日有課程
       if (courses.length > 0) {
         cell.classList.add("bookable");
         if (holidayInfo.affectedCourses.length > 0) {
@@ -767,7 +777,6 @@
         return cell;
       }
 
-      // 3) 無課程、非停課：灰字不可點
       cell.classList.add("disabled");
       return cell;
     }
@@ -893,7 +902,6 @@
     function updateSelectedInfoBar() {
       const bar = d.getElementById("selectedInfoBar");
 
-      // 清除舊主題
       bar.classList.remove("theme-week", "theme-trial", "theme-single");
 
       if (!selectedDate) {
@@ -1089,9 +1097,27 @@
       updateSelectedInfoBar();
     }
 
+    // ========== 公告特殊符號解析 ==========
+    // 規則：!!文字!! → 紅色粗體放大
+    // 先跳脫 HTML 特殊字元，避免 XSS
+    function renderAnnouncement(text) {
+      if (!text) return "";
+
+      let escaped = String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+      // !!文字!! → <span class="highlight-red">文字</span>
+      // [^!]+ 表示「不含 ! 的一或多個字元」，避免 !!a!!b!! 誤判
+      escaped = escaped.replace(/!!([^!]+)!!/g, '<span class="highlight-red">$1</span>');
+
+      return escaped;
+    }
+
     // ========== Modal ==========
     function showAnnouncementModal(text) {
-      d.getElementById("announcementBody").textContent = text;
+      d.getElementById("announcementBody").innerHTML = renderAnnouncement(text);
       d.getElementById("announcementModal").classList.add("active");
     }
     function closeAnnouncementModal() { d.getElementById("announcementModal").classList.remove("active"); }
